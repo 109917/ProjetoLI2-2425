@@ -99,7 +99,6 @@ void casaaBranco(const char *str) {
     int j = coord.coluna;
 
     if (i < 0 || i >= TAMANHO || j < 0 || j >= TAMANHO) return;
-    if (tabuleiro[i][j] == 0) return;
     if (tabuleiro[i][j] == '#') return;
     if (tabuleiro[i][j] == 'A' || tabuleiro[i][j] == 'B' || tabuleiro[i][j] == 'C' || tabuleiro[i][j] == 'D' || tabuleiro[i][j] == 'E') return;
 
@@ -112,19 +111,16 @@ void casaaBranco(const char *str) {
     }
 }
 
-void casaRiscada(const char *str) {
-    if (!eh_coordenada(str)) return;
-
-    coordenada_t coord = parse_coord(str);
+void casaRiscada(coordenada_t coord) {
     int i = coord.linha;
     int j = coord.coluna;
 
     if (i < 0 || i >= TAMANHO || j < 0 || j >= TAMANHO) return;
-    if (tabuleiro[i][j] == 0) return;
-    if (tabuleiro[i][j] == '#') return;
+    if (estado_atual->tabuleiro[i][j] == '#') return;
 
-    tabuleiro[i][j] = '#';
+    estado_atual->tabuleiro[i][j] = '#';
 }
+
 int linha_valida(int linha) {
     int contagem[26] = {0};
 
