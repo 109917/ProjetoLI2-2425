@@ -1,12 +1,12 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <ctype.h> // Faltava para isdigit, isupper, islower
 
 #define TAMANHO 5
-#define MAXUNDO 100
 
 typedef struct estado {
-    char tabuleiro [TAMANHO][TAMANHO];
+    char tabuleiro[TAMANHO][TAMANHO];
     struct estado *anterior;
 } estado_t;
 
@@ -19,7 +19,6 @@ void salvar_estado() {
     novo->anterior = estado_atual;
     estado_atual = novo;
 }
-
 
 // Função que volta ao estado anterior do tabuleiro
 void desfazer() {
@@ -34,14 +33,11 @@ void desfazer() {
 
 void começar_jogo() {
     estado_atual = malloc(sizeof(estado_t));
-
-    // Exemplo: preencher o tabuleiro com letras minúsculas
     for (int i = 0; i < TAMANHO; i++) {
         for (int j = 0; j < TAMANHO; j++) {
-            estado_atual->tabuleiro[i][j] = 'a' + (j % 26); // só como exemplo
+            estado_atual->tabuleiro[i][j] = 'a' + (j % 5);
         }
     }
-
     estado_atual->anterior = NULL;
 }
 
@@ -50,45 +46,25 @@ typedef struct {
     int coluna;
 } coordenada_t;
 
-void gravar_jogo(const char *nome_ficheiro) {
-    FILE *f = fopen(nome_ficheiro, "w");
-    fclose(f);
-}
-
-void carregar_jogo(const char *nome_ficheiro) {
-    FILE *f = fopen(nome_ficheiro, "r");
-    fclose(f);
-}
-
 coordenada_t parse_coord(const char *str) {
     coordenada_t c;
-    c.coluna = str [0] - 'a';
+    c.coluna = str[0] - 'a';
     c.linha = atoi(str + 1) - 1;
     return c;
 }
 
-int eh_coordenada(const char *str){
+int eh_coordenada(const char *str) {
     return (str[0] >= 'a' && str[0] <= 'e') && isdigit(str[1]);
 }
 
-int tabuleiro[TAMANHO][TAMANHO] = {
-    {'e', 'c', 'a', 'd', 'c'},
-    {'d', 'c', 'd', 'e', 'c'},
-    {'b', 'd', 'd', 'c', 'e'},
-    {'c', 'd', 'e', 'e', 'b'},
-    {'a', 'c', 'c', 'b', 'b'}
-};
-char casasiniciais[] = {'a', 'b', 'c', 'd', 'e'};
-char casas[] = {'a', 'b', 'c', 'd', 'e', 'A', 'B', 'C', 'D', 'E', '#'};
-
-
-void printTabuleiro(){
+void printTabuleiro() {
     for (int i = 0; i < TAMANHO; i++) {
         for (int j = 0; j < TAMANHO; j++) {
             printf("%c ", estado_atual->tabuleiro[i][j]);
         }
         printf("\n");
     }
+    printf("\n");
 }
 
 void casaaBranco(coordenada_t coord) {
@@ -97,37 +73,27 @@ void casaaBranco(coordenada_t coord) {
 
     if (i < 0 || i >= TAMANHO || j < 0 || j >= TAMANHO) return;
     if (estado_atual->tabuleiro[i][j] == '#') return;
-    if (estado_atual->tabuleiro[i][j] == 'A' || estado_atual->tabuleiro[i][j] == 'B' || estado_atual->tabuleiro[i][j] == 'C' || estado_atual->tabuleiro[i][j] == 'D' || estado_atual->tabuleiro[i][j] == 'E') return;
+    if (isupper(estado_atual->tabuleiro[i][j])) return;
 
-    switch (estado_atual->tabuleiro[i][j]) {
-        case 'a': estado_atual->tabuleiro[i][j] = 'A'; break;
-        case 'b': estado_atual->tabuleiro[i][j] = 'B'; break;
-        case 'c': estado_atual->tabuleiro[i][j] = 'C'; break;
-        case 'd': estado_atual->tabuleiro[i][j] = 'D'; break;
-        case 'e': estado_atual->tabuleiro[i][j] = 'E'; break;
-    }
+    estado_atual->tabuleiro[i][j] = toupper(estado_atual->tabuleiro[i][j]);
 }
-
 
 void casaRiscada(coordenada_t coord) {
     int i = coord.linha;
     int j = coord.coluna;
 
     if (i < 0 || i >= TAMANHO || j < 0 || j >= TAMANHO) return;
-    if (estado_atual->tabuleiro[i][j] == '#') return;
-
     estado_atual->tabuleiro[i][j] = '#';
 }
 
 int linha_valida(int linha) {
     int contagem[26] = {0};
-
     for (int j = 0; j < TAMANHO; j++) {
-        if (isupper(tabuleiro[linha][j])) {
-            int idx = tabuleiro[linha][j] - 'A';
+        if (isupper(estado_atual->tabuleiro[linha][j])) {
+            int idx = estado_atual->tabuleiro[linha][j] - 'A';
             contagem[idx]++;
             if (contagem[idx] > 1) {
-                printf("Erro: Letra '%c' repetida na linha %d\n", tabuleiro[linha][j], linha+1);
+                printf("Erro: Letra '%c' repetida na linha %d\n", estado_atual->tabuleiro[linha][j], linha + 1);
                 return 0;
             }
         }
@@ -137,13 +103,12 @@ int linha_valida(int linha) {
 
 int coluna_valida(int coluna) {
     int contagem[26] = {0};
-
     for (int i = 0; i < TAMANHO; i++) {
-        if (isupper(tabuleiro[i][coluna])) {
-            int idx = tabuleiro[i][coluna] - 'A';
+        if (isupper(estado_atual->tabuleiro[i][coluna])) {
+            int idx = estado_atual->tabuleiro[i][coluna] - 'A';
             contagem[idx]++;
             if (contagem[idx] > 1) {
-                printf("Erro: Letra '%c' repetida na coluna %d\n", tabuleiro[i][coluna], coluna+1);
+                printf("Erro: Letra '%c' repetida na coluna %d\n", estado_atual->tabuleiro[i][coluna], coluna + 1);
                 return 0;
             }
         }
@@ -151,96 +116,80 @@ int coluna_valida(int coluna) {
     return 1;
 }
 
-int caminho_ortogonal(int x, int y) {
-    int brancos = 0;
-    int dx[4] = { -1, 1, 0, 0 };
-    int dy[4] = { 0, 0, -1, 1 };
+// Função que verifica se uma casa branca está isolada
+int casa_isolada(int x, int y) {
+    int dx[4] = {-1, 1, 0, 0};
+    int dy[4] = {0, 0, -1, 1};
 
     for (int d = 0; d < 4; d++) {
         int nx = x + dx[d];
         int ny = y + dy[d];
         if (nx >= 0 && nx < TAMANHO && ny >= 0 && ny < TAMANHO) {
-            if (isupper(tabuleiro[nx][ny])) {
-                brancos++;
+            if (isupper(estado_atual->tabuleiro[nx][ny])) {
+                return 0; // tem vizinho
             }
         }
     }
-    return brancos == 0;
+    return 1; // isolado
 }
 
 int verificar_vitoria() {
     for (int i = 0; i < TAMANHO; i++) {
         if (!linha_valida(i)) return 0;
     }
-
     for (int j = 0; j < TAMANHO; j++) {
         if (!coluna_valida(j)) return 0;
     }
-
     for (int i = 0; i < TAMANHO; i++) {
         for (int j = 0; j < TAMANHO; j++) {
-            char c = tabuleiro[i][j];
-            if (islower(c)) return 0;  // letra minúscula ainda presente
-            if (isupper(c) && casa_isolada(i, j)) return 0;  // casa branca isolada
+            char c = estado_atual->tabuleiro[i][j];
+            if (islower(c)) return 0;
+            if (isupper(c) && casa_isolada(i, j)) return 0;
         }
     }
-
     return 1;
 }
 
-void comandos(char *input) {
-    if (input[0] == 's') {
-        exit(0);
-    } else if (input[0] == 'g' && input[1] == ' ') {
-        gravar_estado(input + 2);
-    } else if (input[0] == 'l' && input[1] == ' ') {
-        ler_estado(input + 2);
-    } else if (input[0] == 'b' && input[1] == ' ') {
-        coordenada_t coord = parse_coord(input + 2);
-        casaaBranco(coord);
-    } else if (input[0] == 'r' && input[1] == ' ') {
-        coordenada_t coord = parse_coord(input + 2);
-        casaRiscada(coord);
-    } else if (input[0] == 'v') {
-        verificar_estado();
-    } else if (input[0] == 'a') {
-        ajuda();
-    } else if (input[0] == 'A') {
-        ajuda_iterativa();
-    } else if (input[0] == 'R') {
-        resolver_jogo();
-    } else if (input[0] == 'd') {
-        desfazer();
-    } else if (eh_coordenada(input)) {
-        coordenada_t coord = parse_coord(input);
-        selecionar_coord(coord);
-    } else {
-        printf("Comando desconhecido.\n");
-    }
-}
-
-int main () {
+int main() {
     começar_jogo();
-
     char comando[100];
 
-    while (1){
+    while (1) {
         printTabuleiro();
         printf("> ");
-        fgets(comando, sizeof(comando), stdin);
+        if (!fgets(comando, sizeof(comando), stdin)) break;
+        
+        comando[strcspn(comando, "\n")] = 0; // remover o \n
 
-        if (comando[0] == 's') break;
-        else if (comando[0] == 'd') desfazer();
-        else if (comando[0] == 'b') {
-            int linha = comando[2] - '1';       // ex: b 3  → linha 2
-            int coluna = comando[1] - 'a';      // ex: b c  → coluna 2
-            pintar_maiuscula(linha, coluna);
-        }   
+        if (strcmp(comando, "s") == 0) {
+            break;
+        } else if (strcmp(comando, "d") == 0) {
+            desfazer();
+        } else if (comando[0] == 'b' && comando[1] == ' ') {
+            coordenada_t coord = parse_coord(comando + 2);
+            casaaBranco(coord);
+            salvar_estado();
+        } else if (comando[0] == 'r' && comando[1] == ' ') {
+            coordenada_t coord = parse_coord(comando + 2);
+            casaRiscada(coord);
+            salvar_estado();
+        } else {
+            printf("Comando desconhecido.\n");
+        }
+
         if (verificar_vitoria()) {
-            mostrar_tabuleiro();
+            printTabuleiro();
             printf("Puzzle completo!\n");
-            break;  // termina o programa
+            break;
         }
     }
+
+    // Liberar memória
+    while (estado_atual) {
+        estado_t *temp = estado_atual;
+        estado_atual = estado_atual->anterior;
+        free(temp);
+    }
+
     return 0;
 }
