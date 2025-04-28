@@ -125,6 +125,74 @@ void casaRiscada(const char *str) {
 
     tabuleiro[i][j] = '#';
 }
+int linha_valida(int linha) {
+    int contagem[26] = {0};
+
+    for (int j = 0; j < TAMANHO; j++) {
+        if (isupper(tabuleiro[linha][j])) {
+            int idx = tabuleiro[linha][j] - 'A';
+            contagem[idx]++;
+            if (contagem[idx] > 1) {
+                printf("Erro: Letra '%c' repetida na linha %d\n", tabuleiro[linha][j], linha+1);
+                return 0;
+            }
+        }
+    }
+    return 1;
+}
+
+int coluna_valida(int coluna) {
+    int contagem[26] = {0};
+
+    for (int i = 0; i < TAMANHO; i++) {
+        if (isupper(tabuleiro[i][coluna])) {
+            int idx = tabuleiro[i][coluna] - 'A';
+            contagem[idx]++;
+            if (contagem[idx] > 1) {
+                printf("Erro: Letra '%c' repetida na coluna %d\n", tabuleiro[i][coluna], coluna+1);
+                return 0;
+            }
+        }
+    }
+    return 1;
+}
+
+int caminho_ortogonal(int x, int y) {
+    int brancos = 0;
+    int dx[4] = { -1, 1, 0, 0 };
+    int dy[4] = { 0, 0, -1, 1 };
+
+    for (int d = 0; d < 4; d++) {
+        int nx = x + dx[d];
+        int ny = y + dy[d];
+        if (nx >= 0 && nx < TAMANHO && ny >= 0 && ny < TAMANHO) {
+            if (isupper(tabuleiro[nx][ny])) {
+                brancos++;
+            }
+        }
+    }
+    return brancos == 0;
+}
+
+int verificar_vitoria() {
+    for (int i = 0; i < TAMANHO; i++) {
+        if (!linha_valida(i)) return 0;
+    }
+
+    for (int j = 0; j < TAMANHO; j++) {
+        if (!coluna_valida(j)) return 0;
+    }
+
+    for (int i = 0; i < TAMANHO; i++) {
+        for (int j = 0; j < TAMANHO; j++) {
+            char c = tabuleiro[i][j];
+            if (islower(c)) return 0;  // letra minúscula ainda presente
+            if (isupper(c) && casa_isolada(i, j)) return 0;  // casa branca isolada
+        }
+    }
+
+    return 1;
+}
 
 void comandos(char *input) {
     if (input[0] == 's') {
@@ -173,8 +241,12 @@ int main () {
             int linha = comando[2] - '1';       // ex: b 3  → linha 2
             int coluna = comando[1] - 'a';      // ex: b c  → coluna 2
             pintar_maiuscula(linha, coluna);
+        }   
+        if (verificar_vitoria()) {
+            mostrar_tabuleiro();
+            printf("Puzzle completo!\n");
+            break;  // termina o programa
         }
     }
-
     return 0;
 }
