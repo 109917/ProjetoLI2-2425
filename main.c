@@ -91,25 +91,23 @@ void printTabuleiro(){
     }
 }
 
-void casaaBranco(const char *str) {
-    if (!eh_coordenada(str)) return;
-
-    coordenada_t coord = parse_coord(str);
+void casaaBranco(coordenada_t coord) {
     int i = coord.linha;
     int j = coord.coluna;
 
     if (i < 0 || i >= TAMANHO || j < 0 || j >= TAMANHO) return;
-    if (tabuleiro[i][j] == '#') return;
-    if (tabuleiro[i][j] == 'A' || tabuleiro[i][j] == 'B' || tabuleiro[i][j] == 'C' || tabuleiro[i][j] == 'D' || tabuleiro[i][j] == 'E') return;
+    if (estado_atual->tabuleiro[i][j] == '#') return;
+    if (estado_atual->tabuleiro[i][j] == 'A' || estado_atual->tabuleiro[i][j] == 'B' || estado_atual->tabuleiro[i][j] == 'C' || estado_atual->tabuleiro[i][j] == 'D' || estado_atual->tabuleiro[i][j] == 'E') return;
 
-    switch (tabuleiro[i][j]) {
-        case 'a': tabuleiro[i][j] = 'A'; break;
-        case 'b': tabuleiro[i][j] = 'B'; break;
-        case 'c': tabuleiro[i][j] = 'C'; break;
-        case 'd': tabuleiro[i][j] = 'D'; break;
-        case 'e': tabuleiro[i][j] = 'E'; break;
+    switch (estado_atual->tabuleiro[i][j]) {
+        case 'a': estado_atual->tabuleiro[i][j] = 'A'; break;
+        case 'b': estado_atual->tabuleiro[i][j] = 'B'; break;
+        case 'c': estado_atual->tabuleiro[i][j] = 'C'; break;
+        case 'd': estado_atual->tabuleiro[i][j] = 'D'; break;
+        case 'e': estado_atual->tabuleiro[i][j] = 'E'; break;
     }
 }
+
 
 void casaRiscada(coordenada_t coord) {
     int i = coord.linha;
