@@ -148,7 +148,7 @@ int verificar_vitoria() {
 }
 
 int main() {
-    printf("Comandos : \n 's' - sair do jogo \n 'r' - riscar a coordenada \n 'b' - colocar a casa da coordenada Branca \n 'd' - voltar atrás \n 'v' - verificar as restrições \n");
+    printf("Comandos : \n 's' - sair do jogo \n 'r' - riscar a coordenada \n 'b' - colocar a casa da coordenada Branca \n 'd' - voltar atrás \n 'v' - verificar as restrições \n \n");
     começar_jogo();
     char comando[100];
 
