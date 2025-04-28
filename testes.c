@@ -1,5 +1,5 @@
 #include <CUnit/Basic.h>
-#include "main.h" // o ficheiro onde seu código principal está
+#include "utils.h"
 
 void test_parse_coord() {
     coordenada_t c = parse_coord("a1");
@@ -29,7 +29,7 @@ void test_linha_valida() {
 
     CU_ASSERT_TRUE(linha_valida(0));
 
-    estado_atual->tabuleiro[0][3] = 'A'; // duplicar A
+    estado_atual->tabuleiro[0][3] = 'A'; 
     CU_ASSERT_FALSE(linha_valida(0));
 }
 
@@ -43,13 +43,12 @@ void test_coluna_valida() {
 
     CU_ASSERT_TRUE(coluna_valida(0));
 
-    estado_atual->tabuleiro[3][0] = 'A'; // duplicar A
+    estado_atual->tabuleiro[3][0] = 'A'; 
     CU_ASSERT_FALSE(coluna_valida(0));
 }
 
 void test_casa_isolada() {
     começar_jogo();
-    // Coloca uma letra maiúscula no meio do tabuleiro
     for (int i = 0; i < TAMANHO; i++) 
         for (int j = 0; j < TAMANHO; j++) 
             estado_atual->tabuleiro[i][j] = '#';
@@ -57,13 +56,12 @@ void test_casa_isolada() {
     estado_atual->tabuleiro[2][2] = 'A';
     CU_ASSERT_TRUE(casa_isolada(2, 2));
 
-    estado_atual->tabuleiro[2][3] = 'B'; // vizinho direito
+    estado_atual->tabuleiro[2][3] = 'B'; 
     CU_ASSERT_FALSE(casa_isolada(2, 2));
 }
 
 void test_verificar_vitoria() {
     começar_jogo();
-    // Todos maiúsculos sem repetições
     char letras[] = { 'A', 'B', 'C', 'D', 'E' };
 
     for (int i = 0; i < TAMANHO; i++) {
@@ -74,13 +72,11 @@ void test_verificar_vitoria() {
 
     CU_ASSERT_TRUE(verificar_vitoria());
 
-    // Introduz um minúsculo
     estado_atual->tabuleiro[1][1] = 'b';
     CU_ASSERT_FALSE(verificar_vitoria());
 }
 
 int main() {
-    // Inicializar o registro de teste
     if (CUE_SUCCESS != CU_initialize_registry())
         return CU_get_error();
 
@@ -92,7 +88,6 @@ int main() {
         return CU_get_error();
     }
 
-    // Adiciona testes
     CU_add_test(pSuite, "Teste parse_coord", test_parse_coord);
     CU_add_test(pSuite, "Teste eh_coordenada", test_eh_coordenada);
     CU_add_test(pSuite, "Teste linha_valida", test_linha_valida);
@@ -100,7 +95,7 @@ int main() {
     CU_add_test(pSuite, "Teste casa_isolada", test_casa_isolada);
     CU_add_test(pSuite, "Teste verificar_vitoria", test_verificar_vitoria);
 
-    CU_basic_set_mode(CU_BRM_VERBOSE); // imprime mais detalhes
+    CU_basic_set_mode(CU_BRM_VERBOSE);
     CU_basic_run_tests();
     CU_cleanup_registry();
     return CU_get_error();
