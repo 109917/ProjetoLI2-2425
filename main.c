@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <ctype.h> // Faltava para isdigit, isupper, islower
+#include <ctype.h>
 
 #define TAMANHO 5
 
@@ -12,7 +12,6 @@ typedef struct estado {
 
 estado_t *estado_atual = NULL;
 
-// Função que salva o novo estado do tabuleiro
 void salvar_estado() {
     estado_t *novo = malloc(sizeof(estado_t));
     memcpy(novo->tabuleiro, estado_atual->tabuleiro, sizeof(novo->tabuleiro));
@@ -20,7 +19,6 @@ void salvar_estado() {
     estado_atual = novo;
 }
 
-// Função que volta ao estado anterior do tabuleiro
 void desfazer() {
     if (estado_atual->anterior) {
         estado_t *temp = estado_atual;
@@ -116,7 +114,6 @@ int coluna_valida(int coluna) {
     return 1;
 }
 
-// Função que verifica se uma casa branca está isolada
 int casa_isolada(int x, int y) {
     int dx[4] = {-1, 1, 0, 0};
     int dy[4] = {0, 0, -1, 1};
@@ -126,11 +123,11 @@ int casa_isolada(int x, int y) {
         int ny = y + dy[d];
         if (nx >= 0 && nx < TAMANHO && ny >= 0 && ny < TAMANHO) {
             if (isupper(estado_atual->tabuleiro[nx][ny])) {
-                return 0; // tem vizinho
+                return 0; 
             }
         }
     }
-    return 1; // isolado
+    return 1; 
 }
 
 int verificar_vitoria() {
@@ -151,6 +148,7 @@ int verificar_vitoria() {
 }
 
 int main() {
+    printf("Comandos : \n 's' - sair do jogo \n 'r' - riscar a coordenada \n 'b' - colocar a casa da coordenada Branca \n 'd' - voltar atrás \n 'v' - verificar as restrições \n");
     começar_jogo();
     char comando[100];
 
@@ -159,7 +157,7 @@ int main() {
         printf("> ");
         if (!fgets(comando, sizeof(comando), stdin)) break;
         
-        comando[strcspn(comando, "\n")] = 0; // remover o \n
+        comando[strcspn(comando, "\n")] = 0; 
 
         if (strcmp(comando, "s") == 0) {
             break;
@@ -184,7 +182,6 @@ int main() {
         }
     }
 
-    // Liberar memória
     while (estado_atual) {
         estado_t *temp = estado_atual;
         estado_atual = estado_atual->anterior;
