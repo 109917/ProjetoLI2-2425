@@ -12,6 +12,7 @@ typedef struct estado {
 
 estado_t *estado_atual = NULL;
 
+// Função que salva o novo estado do tabuleiro
 void salvar_estado() {
     estado_t *novo = malloc(sizeof(estado_t));
     memcpy(novo->tabuleiro, estado_atual->tabuleiro, sizeof(novo->tabuleiro));
@@ -19,6 +20,8 @@ void salvar_estado() {
     estado_atual = novo;
 }
 
+
+// Função que volta ao estado anterior do tabuleiro
 void desfazer() {
     if (estado_atual->anterior) {
         estado_t *temp = estado_atual;
@@ -42,24 +45,17 @@ void começar_jogo() {
     estado_atual->anterior = NULL;
 }
 
-void salvar_estado() {
-    estado_t *novo = malloc(sizeof(estado_t));
-    memcpy(novo->tabuleiro, estado_atual->tabuleiro, sizeof(novo->tabuleiro));
-    novo->anterior = estado_atual;
-    estado_atual = novo;
-}
-
 typedef struct {
     int linha;
     int coluna;
 } coordenada_t;
 
-void gravar_estado(const char *nome_ficheiro) {
+void gravar_jogo(const char *nome_ficheiro) {
     FILE *f = fopen(nome_ficheiro, "w");
     fclose(f);
 }
 
-void carregar_estado(const char *nome_ficheiro) {
+void carregar_jogo(const char *nome_ficheiro) {
     FILE *f = fopen(nome_ficheiro, "r");
     fclose(f);
 }
@@ -95,37 +91,39 @@ void printTabuleiro(){
     }
 }
 
-void casaaBranco (int i, int j){
+void casaaBranco(const char *str) {
+    if (!eh_coordenada(str)) return;
+
+    coordenada_t coord = parse_coord(str);
+    int i = coord.linha;
+    int j = coord.coluna;
+
     if (i < 0 || i >= TAMANHO || j < 0 || j >= TAMANHO) return;
     if (tabuleiro[i][j] == 0) return;
     if (tabuleiro[i][j] == '#') return;
     if (tabuleiro[i][j] == 'A' || tabuleiro[i][j] == 'B' || tabuleiro[i][j] == 'C' || tabuleiro[i][j] == 'D' || tabuleiro[i][j] == 'E') return;
-        else { 
-            if (tabuleiro[i][j] == 'a') {
-                tabuleiro[i][j] = 'A';
-            }
-            else if (tabuleiro[i][j] == 'b') {
-                tabuleiro[i][j] = 'B';
-            }
-            else if (tabuleiro[i][j] == 'c') {
-                tabuleiro[i][j] = 'C';
-            }
-            else if (tabuleiro[i][j] == 'd') {
-                tabuleiro[i][j] = 'D';
-            }
-            else if (tabuleiro[i][j] == 'e') {
-                tabuleiro[i][j] = 'E';
-            }
-        }
+
+    switch (tabuleiro[i][j]) {
+        case 'a': tabuleiro[i][j] = 'A'; break;
+        case 'b': tabuleiro[i][j] = 'B'; break;
+        case 'c': tabuleiro[i][j] = 'C'; break;
+        case 'd': tabuleiro[i][j] = 'D'; break;
+        case 'e': tabuleiro[i][j] = 'E'; break;
+    }
 }
 
-void casaRiscada (int i, int j){
+void casaRiscada(const char *str) {
+    if (!eh_coordenada(str)) return;
+
+    coordenada_t coord = parse_coord(str);
+    int i = coord.linha;
+    int j = coord.coluna;
+
     if (i < 0 || i >= TAMANHO || j < 0 || j >= TAMANHO) return;
     if (tabuleiro[i][j] == 0) return;
     if (tabuleiro[i][j] == '#') return;
-        else {
-            tabuleiro [i][j] = '#';
-        }
+
+    tabuleiro[i][j] = '#';
 }
 
 void comandos(char *input) {
