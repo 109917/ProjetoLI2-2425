@@ -10,6 +10,11 @@ typedef struct estado {
     struct estado *anterior;
 } estado_t;
 
+typedef struct {
+    int linha;
+    int coluna;
+} coordenada_t;
+
 estado_t *estado_atual = NULL;
 
 void salvar_estado() {
@@ -39,7 +44,13 @@ void carregar_txt(const char *nome) {
     estado_t *novo = malloc(sizeof(estado_t));
     for (int i = 0; i < TAMANHO; i++) {
         for (int j = 0; j < TAMANHO; j++) {
-            fscanf(f, " %c", &novo->tabuleiro[i][j]);
+            if (fscanf(f, " %c", &novo->tabuleiro[i][j]) != 1) {
+                printf("Erro ao ler o tabuleiro no ficheiro.\n");
+                fclose(f);
+                free(novo);
+    return;
+            }
+
         }
     }
     novo->anterior = NULL;
@@ -66,20 +77,11 @@ void gravar_txt(const char *nome) {
     fclose(f);
 }
 
-typedef struct {
-    int linha;
-    int coluna;
-} coordenada_t;
-
 coordenada_t parse_coord(const char *str) {
     coordenada_t c;
-    c.coluna = str[0] - 'a';
-    c.linha = atoi(str + 1) - 1;
+    c.linha = str[0] - 'a';
+    c.coluna = atoi(str + 1) - 1;
     return c;
-}
-
-int eh_coordenada(const char *str) {
-    return (str[0] >= 'a' && str[0] <= 'e') && isdigit(str[1]);
 }
 
 void printTabuleiro() {
@@ -174,45 +176,70 @@ int verificar_vitoria() {
     return 1;
 }
 
+void gravar_estado(const char *nome) {
+    gravar_txt(nome);
+}
+
+void ler_estado(const char *nome) {
+    carregar_txt(nome);
+}
+
+void começar_jogo() {
+    estado_t *inicio = malloc(sizeof(estado_t));
+    for (int i = 0; i < TAMANHO; i++) {
+        for (int j = 0; j < TAMANHO; j++) {
+            inicio->tabuleiro[i][j] = 'a' + j;  
+        }
+    }
+    inicio->anterior = NULL;
+    estado_atual = inicio;
+}
+
+void ler_comandos_jogo(char *comando) {
+    if (comando[0] == 's') {
+        exit(0);
+    } else if (comando[0] == 'd') {
+        desfazer();
+    } else if (comando[0] == 'b' && comando[1] == ' ') {
+        coordenada_t coord = parse_coord(comando + 2);
+        salvar_estado();
+        casaaBranco(coord);
+    } else if (comando[0] == 'r' && comando[1] == ' ') {
+        coordenada_t coord = parse_coord(comando + 2);
+        salvar_estado();
+        casaRiscada(coord);
+    } else if (comando[0] == 'g' && comando[1] == ' ') {
+        gravar_estado(comando + 2);
+    } else if (comando[0] == 'l' && comando[1] == ' ') {
+        ler_estado(comando + 2);
+    } else {
+        printf("Comando desconhecido.\n");
+    }
+}
+
 int main() {
     printf("Comandos : \n 's' - sair do jogo \n 'r' - riscar a coordenada \n 'b' - colocar a casa da coordenada Branca \n 'd' - voltar atrás \n 'v' - verificar as restrições \n \n");
     começar_jogo();
+
     char comando[100];
 
     while (1) {
         printTabuleiro();
         printf("> ");
-        if (!fgets(comando, sizeof(comando), stdin)) break;
-        
-        comando[strcspn(comando, "\n")] = 0; 
-
-        if (strcmp(comando, "s") == 0) {
-            break;
-        } else if (strcmp(comando, "d") == 0) {
-            desfazer();
-        } else if (comando[0] == 'b' && comando[1] == ' ') {
-            coordenada_t coord = parse_coord(comando + 2);
-            casaaBranco(coord);
-            salvar_estado();
-        } else if (comando[0] == 'r' && comando[1] == ' ') {
-            coordenada_t coord = parse_coord(comando + 2);
-            casaRiscada(coord);
-            salvar_estado();
-        } else {
-            printf("Comando desconhecido.\n");
+        if (fgets(comando, sizeof(comando), stdin)) {
+            comando[strcspn(comando, "\n")] = '\0';
+            ler_comandos_jogo(comando);
         }
+
+        comando[strcspn(comando, "\n")] = '\0';
+
+        ler_comandos_jogo(comando);
 
         if (verificar_vitoria()) {
             printTabuleiro();
             printf("Puzzle completo!\n");
             break;
         }
-    }
-
-    while (estado_atual) {
-        estado_t *temp = estado_atual;
-        estado_atual = estado_atual->anterior;
-        free(temp);
     }
 
     return 0;
