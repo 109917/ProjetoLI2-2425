@@ -29,14 +29,24 @@ void desfazer() {
     }
 }
 
-void começar_jogo() {
-    estado_atual = malloc(sizeof(estado_t));
+void carregar_txt(const char *nome) {
+    FILE *f = fopen(nome, "r");
+    if (!f) {
+        printf("Erro ao abrir ficheiro TXT.\n");
+        return;
+    }
+
+    estado_t *novo = malloc(sizeof(estado_t));
     for (int i = 0; i < TAMANHO; i++) {
         for (int j = 0; j < TAMANHO; j++) {
-            estado_atual->tabuleiro[i][j] = 'a' + (j % 5);
+            fscanf(f, " %c", &novo->tabuleiro[i][j]);
         }
     }
-    estado_atual->anterior = NULL;
+    novo->anterior = NULL;
+    if (estado_atual) free(estado_atual);
+    estado_atual = novo;
+
+    fclose(f);
 }
 
 typedef struct {
