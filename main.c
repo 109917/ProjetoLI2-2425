@@ -49,6 +49,23 @@ void carregar_txt(const char *nome) {
     fclose(f);
 }
 
+void gravar_txt(const char *nome) {
+    FILE *f = fopen(nome, "w");
+    if (!f) {
+        printf("Erro ao gravar ficheiro TXT.\n");
+        return;
+    }
+
+    for (int i = 0; i < TAMANHO; i++) {
+        for (int j = 0; j < TAMANHO; j++) {
+            fprintf(f, "%c ", estado_atual->tabuleiro[i][j]);
+        }
+        fprintf(f, "\n");
+    }
+
+    fclose(f);
+}
+
 typedef struct {
     int linha;
     int coluna;
