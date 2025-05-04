@@ -209,6 +209,20 @@ int coluna_valida(int coluna) {
 }
 
 
+void dfs(int i, int j, int visitado[TAMANHO][TAMANHO], int *conectadas) {
+    if (i < 0 || i >= TAMANHO || j < 0 || j >= TAMANHO) return;
+    if (visitado[i][j]) return;
+    if (!isupper(estado_atual->tabuleiro[i][j])) return;
+
+    visitado[i][j] = 1;
+    (*conectadas)++;
+
+    dfs(i + 1, j, visitado, conectadas);
+    dfs(i - 1, j, visitado, conectadas);
+    dfs(i, j + 1, visitado, conectadas);
+    dfs(i, j - 1, visitado, conectadas);
+}
+
 int todas_casas_conectadas() {
     int visitado[TAMANHO][TAMANHO] = {0};
     int total_brancas = 0;
@@ -229,21 +243,7 @@ int todas_casas_conectadas() {
 
     if (total_brancas == 0) return 1;
 
-    void dfs (int i, int j) {
-        if (i < 0 || i >= TAMANHO || j < 0 || j >= TAMANHO) return;
-        if (visitado[i][j]) return;
-        if (!isupper(estado_atual->tabuleiro[i][j])) return;
-
-        visitado[i][j] = 1;
-        conectadas++;
-
-        dfs(i + 1, j);
-        dfs(i - 1, j);
-        dfs(i, j + 1);
-        dfs(i, j - 1);
-    }
-
-    dfs(inicio_i, inicio_j);
+    dfs(inicio_i, inicio_j, visitado, &conectadas);
     return conectadas == total_brancas;
 }
 
