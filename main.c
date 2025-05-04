@@ -113,14 +113,88 @@ void casaRiscada(coordenada_t coord) {
     estado_atual->tabuleiro[i][j] = '#';
 }
 
-int linha_valida(int linha) {
+int verificar_repeticoes_letras_linha(int linha) {
     int contagem[26] = {0};
     for (int j = 0; j < TAMANHO; j++) {
-        if (isupper(estado_atual->tabuleiro[linha][j])) {
-            int idx = estado_atual->tabuleiro[linha][j] - 'A';
+        char c = estado_atual->tabuleiro[linha][j];
+        if (isupper(c)) {
+            int idx = c - 'A';
             contagem[idx]++;
             if (contagem[idx] > 1) {
-                printf("Erro: Letra '%c' repetida na linha %d\n", estado_atual->tabuleiro[linha][j], linha + 1);
+                return 0;
+            }
+        }
+    }
+    return 1;
+}
+
+int verificar_minisculas_linha(int linha) {
+    for (int j = 0; j < TAMANHO; j++) {
+        char c = estado_atual->tabuleiro[linha][j];
+        if (islower(c)) {
+            return 0;
+        }
+    }
+    return 1;
+}
+
+int verificar_vizinhos_riscados_linha(int linha) {
+    for (int j = 0; j < TAMANHO; j++) {
+        if (estado_atual->tabuleiro[linha][j] == '#') {
+            int vizinho = 0;
+            if (linha > 0 && isupper(estado_atual->tabuleiro[linha - 1][j])) vizinho = 1;
+            if (linha < TAMANHO - 1 && isupper(estado_atual->tabuleiro[linha + 1][j])) vizinho = 1;
+            if (j > 0 && isupper(estado_atual->tabuleiro[linha][j - 1])) vizinho = 1;
+            if (j < TAMANHO - 1 && isupper(estado_atual->tabuleiro[linha][j + 1])) vizinho = 1;
+            if (!vizinho) {
+                return 0;
+            }
+        }
+    }
+    return 1;
+}
+
+int linha_valida(int linha) {
+    return verificar_repeticoes_letras_linha(linha) &&
+           verificar_minisculas_linha(linha) &&
+           verificar_vizinhos_riscados_linha(linha);
+}
+
+
+int verificar_repeticoes_letras_coluna(int coluna) {
+    int contagem[26] = {0};
+    for (int i = 0; i < TAMANHO; i++) {
+        char c = estado_atual->tabuleiro[i][coluna];
+        if (isupper(c)) {
+            int idx = c - 'A';
+            contagem[idx]++;
+            if (contagem[idx] > 1) {
+                return 0;
+            }
+        }
+    }
+    return 1;
+}
+
+int verificar_minisculas_coluna(int coluna) {
+    for (int i = 0; i < TAMANHO; i++) {
+        char c = estado_atual->tabuleiro[i][coluna];
+        if (islower(c)) {
+            return 0;
+        }
+    }
+    return 1;
+}
+
+int verificar_vizinhos_riscados_coluna(int coluna) {
+    for (int i = 0; i < TAMANHO; i++) {
+        if (estado_atual->tabuleiro[i][coluna] == '#') {
+            int vizinho = 0;
+            if (i > 0 && isupper(estado_atual->tabuleiro[i - 1][coluna])) vizinho = 1;
+            if (i < TAMANHO - 1 && isupper(estado_atual->tabuleiro[i + 1][coluna])) vizinho = 1;
+            if (coluna > 0 && isupper(estado_atual->tabuleiro[i][coluna - 1])) vizinho = 1;
+            if (coluna < TAMANHO - 1 && isupper(estado_atual->tabuleiro[i][coluna + 1])) vizinho = 1;
+            if (!vizinho) {
                 return 0;
             }
         }
@@ -129,26 +203,17 @@ int linha_valida(int linha) {
 }
 
 int coluna_valida(int coluna) {
-    int contagem[26] = {0};
-    for (int i = 0; i < TAMANHO; i++) {
-        if (isupper(estado_atual->tabuleiro[i][coluna])) {
-            int idx = estado_atual->tabuleiro[i][coluna] - 'A';
-            contagem[idx]++;
-            if (contagem[idx] > 1) {
-                printf("Erro: Letra '%c' repetida na coluna %d\n", estado_atual->tabuleiro[i][coluna], coluna + 1);
-                return 0;
-            }
-        }
-    }
-    return 1;
+    return verificar_repeticoes_letras_coluna(coluna) &&
+           verificar_minisculas_coluna(coluna) &&
+           verificar_vizinhos_riscados_coluna(coluna);
 }
+
 
 int todas_casas_conectadas() {
     int visitado[TAMANHO][TAMANHO] = {0};
     int total_brancas = 0;
     int conectadas = 0;
 
-    // Encontra uma casa branca inicial
     int inicio_i = -1, inicio_j = -1;
     for (int i = 0; i < TAMANHO; i++) {
         for (int j = 0; j < TAMANHO; j++) {
@@ -162,10 +227,9 @@ int todas_casas_conectadas() {
         }
     }
 
-    if (total_brancas == 0) return 1; // Nenhuma casa branca — trivially connected
+    if (total_brancas == 0) return 1;
 
-    // DFS para contar casas conectadas
-    void dfs(int i, int j) {
+    void dfs (int i, int j) {
         if (i < 0 || i >= TAMANHO || j < 0 || j >= TAMANHO) return;
         if (visitado[i][j]) return;
         if (!isupper(estado_atual->tabuleiro[i][j])) return;
