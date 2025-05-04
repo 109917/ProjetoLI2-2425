@@ -143,20 +143,44 @@ int coluna_valida(int coluna) {
     return 1;
 }
 
-int casa_isolada(int x, int y) {
-    int dx[4] = {-1, 1, 0, 0};
-    int dy[4] = {0, 0, -1, 1};
+int todas_casas_conectadas() {
+    int visitado[TAMANHO][TAMANHO] = {0};
+    int total_brancas = 0;
+    int conectadas = 0;
 
-    for (int d = 0; d < 4; d++) {
-        int nx = x + dx[d];
-        int ny = y + dy[d];
-        if (nx >= 0 && nx < TAMANHO && ny >= 0 && ny < TAMANHO) {
-            if (isupper(estado_atual->tabuleiro[nx][ny])) {
-                return 0; 
+    // Encontra uma casa branca inicial
+    int inicio_i = -1, inicio_j = -1;
+    for (int i = 0; i < TAMANHO; i++) {
+        for (int j = 0; j < TAMANHO; j++) {
+            if (isupper(estado_atual->tabuleiro[i][j])) {
+                total_brancas++;
+                if (inicio_i == -1) {
+                    inicio_i = i;
+                    inicio_j = j;
+                }
             }
         }
     }
-    return 1; 
+
+    if (total_brancas == 0) return 1; // Nenhuma casa branca — trivially connected
+
+    // DFS para contar casas conectadas
+    void dfs(int i, int j) {
+        if (i < 0 || i >= TAMANHO || j < 0 || j >= TAMANHO) return;
+        if (visitado[i][j]) return;
+        if (!isupper(estado_atual->tabuleiro[i][j])) return;
+
+        visitado[i][j] = 1;
+        conectadas++;
+
+        dfs(i + 1, j);
+        dfs(i - 1, j);
+        dfs(i, j + 1);
+        dfs(i, j - 1);
+    }
+
+    dfs(inicio_i, inicio_j);
+    return conectadas == total_brancas;
 }
 
 int verificar_vitoria() {
@@ -170,7 +194,7 @@ int verificar_vitoria() {
         for (int j = 0; j < TAMANHO; j++) {
             char c = estado_atual->tabuleiro[i][j];
             if (islower(c)) return 0;
-            if (isupper(c) && casa_isolada(i, j)) return 0;
+            if (!todas_casas_conectadas()) return 0;
         }
     }
     return 1;
