@@ -1,7 +1,5 @@
-int tabuleiro[TAMANHO][TAMANHO] = {
-    {'e', 'c', 'a', 'd', 'c'},
-    {'d', 'c', 'd', 'e', 'c'},
-    {'b', 'd', 'd', 'c', 'e'},
-    {'c', 'd', 'e', 'e', 'b'},
-    {'a', 'c', 'c', 'b', 'b'}
-};
+e c a d c 
+d c d e c 
+b d d c e 
+c d e e b 
+a c c b b 
