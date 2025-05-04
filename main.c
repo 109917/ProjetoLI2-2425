@@ -17,15 +17,19 @@ typedef struct {
 
 estado_t *estado_atual = NULL;
 
+// Protótipos
+void resolver_jogo(void);
+
 void salvar_estado() {
     estado_t *novo = malloc(sizeof(estado_t));
+    if (!novo) exit(EXIT_FAILURE);
     memcpy(novo->tabuleiro, estado_atual->tabuleiro, sizeof(novo->tabuleiro));
     novo->anterior = estado_atual;
     estado_atual = novo;
 }
 
 void desfazer() {
-    if (estado_atual->anterior) {
+    if (estado_atual && estado_atual->anterior) {
         estado_t *temp = estado_atual;
         estado_atual = estado_atual->anterior;
         free(temp);
@@ -42,21 +46,22 @@ void carregar_txt(const char *nome) {
     }
 
     estado_t *novo = malloc(sizeof(estado_t));
+    if (!novo) exit(EXIT_FAILURE);
+
     for (int i = 0; i < TAMANHO; i++) {
         for (int j = 0; j < TAMANHO; j++) {
             if (fscanf(f, " %c", &novo->tabuleiro[i][j]) != 1) {
                 printf("Erro ao ler o tabuleiro no ficheiro.\n");
                 fclose(f);
                 free(novo);
-    return;
+                return;
             }
-
         }
     }
+
     novo->anterior = NULL;
     if (estado_atual) free(estado_atual);
     estado_atual = novo;
-
     fclose(f);
 }
 
@@ -79,7 +84,7 @@ void gravar_txt(const char *nome) {
 
 coordenada_t parse_coord(const char *str) {
     coordenada_t c;
-    c.linha = str[0] - 'a';
+    c.linha = tolower(str[0]) - 'a';
     c.coluna = atoi(str + 1) - 1;
     return c;
 }
@@ -121,9 +126,7 @@ int verificar_repeticoes_letras_linhas() {
             if (isupper(c)) {
                 int idx = c - 'A';
                 contagem[idx]++;
-                if (contagem[idx] > 1) {
-                    return 0;
-                }
+                if (contagem[idx] > 1) return 0;
             }
         }
     }
@@ -131,14 +134,9 @@ int verificar_repeticoes_letras_linhas() {
 }
 
 int verificar_minisculas_linhas() {
-    for (int i = 0; i < TAMANHO; i++) {
-        for (int j = 0; j < TAMANHO; j++) {
-            char c = estado_atual->tabuleiro[i][j];
-            if (islower(c)) {
-                return 0;
-            }
-        }
-    }
+    for (int i = 0; i < TAMANHO; i++)
+        for (int j = 0; j < TAMANHO; j++)
+            if (islower(estado_atual->tabuleiro[i][j])) return 0;
     return 1;
 }
 
@@ -151,9 +149,7 @@ int verificar_vizinhos_riscados_linhas() {
                 if (i < TAMANHO - 1 && isupper(estado_atual->tabuleiro[i + 1][j])) vizinho = 1;
                 if (j > 0 && isupper(estado_atual->tabuleiro[i][j - 1])) vizinho = 1;
                 if (j < TAMANHO - 1 && isupper(estado_atual->tabuleiro[i][j + 1])) vizinho = 1;
-                if (!vizinho) {
-                    return 0;
-                }
+                if (!vizinho) return 0;
             }
         }
     }
@@ -174,9 +170,7 @@ int verificar_repeticoes_letras_colunas() {
             if (isupper(c)) {
                 int idx = c - 'A';
                 contagem[idx]++;
-                if (contagem[idx] > 1) {
-                    return 0;
-                }
+                if (contagem[idx] > 1) return 0;
             }
         }
     }
@@ -184,14 +178,9 @@ int verificar_repeticoes_letras_colunas() {
 }
 
 int verificar_minisculas_colunas() {
-    for (int j = 0; j < TAMANHO; j++) {
-        for (int i = 0; i < TAMANHO; i++) {
-            char c = estado_atual->tabuleiro[i][j];
-            if (islower(c)) {
-                return 0;
-            }
-        }
-    }
+    for (int j = 0; j < TAMANHO; j++)
+        for (int i = 0; i < TAMANHO; i++)
+            if (islower(estado_atual->tabuleiro[i][j])) return 0;
     return 1;
 }
 
@@ -204,9 +193,7 @@ int verificar_vizinhos_riscados_colunas() {
                 if (i < TAMANHO - 1 && isupper(estado_atual->tabuleiro[i + 1][j])) vizinho = 1;
                 if (j > 0 && isupper(estado_atual->tabuleiro[i][j - 1])) vizinho = 1;
                 if (j < TAMANHO - 1 && isupper(estado_atual->tabuleiro[i][j + 1])) vizinho = 1;
-                if (!vizinho) {
-                    return 0;
-                }
+                if (!vizinho) return 0;
             }
         }
     }
@@ -218,7 +205,6 @@ int colunas_validas() {
            verificar_minisculas_colunas() &&
            verificar_vizinhos_riscados_colunas();
 }
-
 
 void dfs(int i, int j, int visitado[TAMANHO][TAMANHO], int *conectadas) {
     if (i < 0 || i >= TAMANHO || j < 0 || j >= TAMANHO) return;
@@ -235,107 +221,37 @@ void dfs(int i, int j, int visitado[TAMANHO][TAMANHO], int *conectadas) {
 }
 
 int todas_casas_conectadas() {
-    int visitado[TAMANHO][TAMANHO] = {0};
-    int total_brancas = 0;
-    int conectadas = 0;
+    int visitado[TAMANHO][TAMANHO] = {{0}};
+    int total = 0, conectadas = 0;
+    int i0 = -1, j0 = -1;
 
-    int inicio_i = -1, inicio_j = -1;
-    for (int i = 0; i < TAMANHO; i++) {
-        for (int j = 0; j < TAMANHO; j++) {
+    for (int i = 0; i < TAMANHO; i++)
+        for (int j = 0; j < TAMANHO; j++)
             if (isupper(estado_atual->tabuleiro[i][j])) {
-                total_brancas++;
-                if (inicio_i == -1) {
-                    inicio_i = i;
-                    inicio_j = j;
-                }
+                total++;
+                if (i0 == -1) { i0 = i; j0 = j; }
             }
-        }
-    }
 
-    if (total_brancas == 0) return 1;
+    if (total == 0) return 1;
 
-    dfs(inicio_i, inicio_j, visitado, &conectadas);
-    return conectadas == total_brancas;
+    dfs(i0, j0, visitado, &conectadas);
+    return conectadas == total;
 }
+
 int verificar_vitoria() {
-    for (int i = 0; i < TAMANHO; i++) {
-        if (!linhas_validas()) return 0; // Substituído por linhas_validas
-    }
-    for (int j = 0; j < TAMANHO; j++) {
-        if (!colunas_validas()) return 0; // Substituído por colunas_validas
-    }
-    for (int i = 0; i < TAMANHO; i++) {
-        for (int j = 0; j < TAMANHO; j++) {
-            char c = estado_atual->tabuleiro[i][j];
-            if (islower(c)) return 0;
-            if (!todas_casas_conectadas()) return 0;
-        }
-    }
-    return 1;
-}
-
-void gravar_estado(const char *nome) {
-    gravar_txt(nome);
-}
-
-void ler_estado(const char *nome) {
-    carregar_txt(nome);
-}
-
-void começar_jogo() {
-    estado_t *inicio = malloc(sizeof(estado_t));
-    for (int i = 0; i < TAMANHO; i++) {
-        for (int j = 0; j < TAMANHO; j++) {
-            inicio->tabuleiro[i][j] = 'a' + j;  
-        }
-    }
-    inicio->anterior = NULL;
-    estado_atual = inicio;
-}
-
-void ler_comandos_jogo(char *comando) {
-    if (comando[0] == 's') {
-        exit(0);
-    } else if (comando[0] == 'd') {
-        desfazer();
-    } else if (comando[0] == 'v') {
-        if (verificar_repeticoes_letras_colunas() && verificar_repeticoes_letras_linhas());
-        else printf("Existem letras repitidas na mesma linha ou coluna! \n");
-        if (verificar_minisculas_colunas() && verificar_minisculas_linhas());
-        else printf("Existem letras minúsculas no tabuleiro! \n");
-        if (verificar_vizinhos_riscados_colunas() && verificar_vizinhos_riscados_linhas());
-        else printf("Existem casas riscadas vizinhas! \n");
-        if (todas_casas_conectadas());
-        else printf("Não existe caminho ortogonal entre todas as casas a Branco!\n");
-    } else if (comando[0] == 'b' && comando[1] == ' ') {
-        coordenada_t coord = parse_coord(comando + 2);
-        salvar_estado();
-        casaaBranco(coord);
-    } else if (comando[0] == 'r' && comando[1] == ' ') {
-        coordenada_t coord = parse_coord(comando + 2);
-        salvar_estado();
-        casaRiscada(coord);
-    } else if (comando[0] == 'g' && comando[1] == ' ') {
-        gravar_estado(comando + 2);
-    } else if (comando[0] == 'l' && comando[1] == ' ') {
-        ler_estado(comando + 2);
-    } else if (comando[0] == 'r' && comando[1] == ' ') {
-        resolver_jogo();
-    } else {
-        printf("Comando desconhecido.\n");
-    }
+    return linhas_validas() &&
+           colunas_validas() &&
+           todas_casas_conectadas();
 }
 
 int pode_colocar(int linha, int coluna, char letra) {
     if (isupper(estado_atual->tabuleiro[linha][coluna])) return 0;
 
-    for (int j = 0; j < TAMANHO; j++) {
+    for (int j = 0; j < TAMANHO; j++)
         if (estado_atual->tabuleiro[linha][j] == letra) return 0;
-    }
 
-    for (int i = 0; i < TAMANHO; i++) {
+    for (int i = 0; i < TAMANHO; i++)
         if (estado_atual->tabuleiro[i][coluna] == letra) return 0;
-    }
 
     return 1;
 }
@@ -345,19 +261,16 @@ int resolver_recursivo() {
         for (int j = 0; j < TAMANHO; j++) {
             char c = estado_atual->tabuleiro[i][j];
             if (islower(c)) {
-                char letra_maiuscula = toupper(c);
-                if (pode_colocar(i, j, letra_maiuscula)) {
-                    estado_atual->tabuleiro[i][j] = letra_maiuscula;
-                    if (resolver_recursivo()) {
-                        return 1;
-                    }
+                char maius = toupper(c);
+                if (pode_colocar(i, j, maius)) {
+                    estado_atual->tabuleiro[i][j] = maius;
+                    if (resolver_recursivo()) return 1;
                     estado_atual->tabuleiro[i][j] = c;
                 }
-                return 0; 
+                return 0;
             }
         }
     }
-
     return verificar_vitoria();
 }
 
@@ -370,10 +283,51 @@ void resolver_jogo() {
     }
 }
 
+void começar_jogo() {
+    estado_t *inicio = malloc(sizeof(estado_t));
+    if (!inicio) exit(EXIT_FAILURE);
+    for (int i = 0; i < TAMANHO; i++)
+        for (int j = 0; j < TAMANHO; j++)
+            inicio->tabuleiro[i][j] = 'a' + j;
+    inicio->anterior = NULL;
+    estado_atual = inicio;
+}
+
+void ler_comandos_jogo(char *comando) {
+    if (comando[0] == 's') {
+        exit(0);
+    } else if (comando[0] == 'd') {
+        desfazer();
+    } else if (comando[0] == 'v') {
+        if (!verificar_repeticoes_letras_colunas() || !verificar_repeticoes_letras_linhas())
+            printf("Existem letras repetidas na mesma linha ou coluna!\n");
+        if (!verificar_minisculas_colunas() || !verificar_minisculas_linhas())
+            printf("Existem letras minúsculas no tabuleiro!\n");
+        if (!verificar_vizinhos_riscados_colunas() || !verificar_vizinhos_riscados_linhas())
+            printf("Existem casas riscadas sem vizinhos brancos!\n");
+        if (!todas_casas_conectadas())
+            printf("Não existe caminho ortogonal entre todas as casas a Branco!\n");
+    } else if (strncmp(comando, "b ", 2) == 0) {
+        salvar_estado();
+        casaaBranco(parse_coord(comando + 2));
+    } else if (strncmp(comando, "r ", 2) == 0) {
+        salvar_estado();
+        casaRiscada(parse_coord(comando + 2));
+    } else if (strncmp(comando, "g ", 2) == 0) {
+        gravar_txt(comando + 2);
+    } else if (strncmp(comando, "l ", 2) == 0) {
+        carregar_txt(comando + 2);
+    } else if (strcmp(comando, "resolver") == 0) {
+        resolver_jogo();
+    } else {
+        printf("Comando desconhecido.\n");
+    }
+}
+
 int main() {
-    printf("Comandos : \n 's' - sair do jogo \n 'r' - riscar a coordenada \n 'b' - colocar a casa da coordenada Branca \n 'd' - voltar atrás \n 'v' - verificar as restrições \n \n");
+    printf("Comandos :\n 's' - sair do jogo\n 'r' - riscar coordenada\n 'b' - casa Branca\n 'd' - desfazer\n 'v' - verificar restrições\n 'r' - resolver\n 'g' <jogo.txt> - gravar o jogo no ficheiro jogo.txt \n 'l' <jogo.txt> - ler o jogo gravado no ficheiro jogo.txt \n \n");
     começar_jogo();
-    
+
     char comando[100];
 
     while (1) {
@@ -382,13 +336,10 @@ int main() {
         if (fgets(comando, sizeof(comando), stdin)) {
             comando[strcspn(comando, "\n")] = '\0';
             ler_comandos_jogo(comando);
-        }
-
-        comando[strcspn(comando, "\n")] = '\0';
-
-        if (verificar_vitoria()) {
-            printf("Puzzle completo!\n");
-            break;
+            if (verificar_vitoria()) {
+                printf("Puzzle completo!\n");
+                break;
+            }
         }
     }
 
