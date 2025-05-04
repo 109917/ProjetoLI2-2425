@@ -257,13 +257,12 @@ int todas_casas_conectadas() {
     dfs(inicio_i, inicio_j, visitado, &conectadas);
     return conectadas == total_brancas;
 }
-
 int verificar_vitoria() {
     for (int i = 0; i < TAMANHO; i++) {
-        if (!linha_valida(i)) return 0;
+        if (!linhas_validas()) return 0; // Substituído por linhas_validas
     }
     for (int j = 0; j < TAMANHO; j++) {
-        if (!coluna_valida(j)) return 0;
+        if (!colunas_validas()) return 0; // Substituído por colunas_validas
     }
     for (int i = 0; i < TAMANHO; i++) {
         for (int j = 0; j < TAMANHO; j++) {
@@ -300,13 +299,13 @@ void ler_comandos_jogo(char *comando) {
     } else if (comando[0] == 'd') {
         desfazer();
     } else if (comando[0] == 'v') {
-        if (verificar_repeticoes_letras_colunas() && verificar_repeticoes_letras_linhas()) printf("");
+        if (verificar_repeticoes_letras_colunas() && verificar_repeticoes_letras_linhas());
         else printf("Existem letras repitidas na mesma linha ou coluna! \n");
-        if (verificar_minisculas_colunas() && verificar_minisculas_linhas()) printf("");
+        if (verificar_minisculas_colunas() && verificar_minisculas_linhas());
         else printf("Existem letras minúsculas no tabuleiro! \n");
-        if (verificar_vizinhos_riscados_colunas() && verificar_vizinhos_riscados_linhas()) printf("");
+        if (verificar_vizinhos_riscados_colunas() && verificar_vizinhos_riscados_linhas());
         else printf("Existem casas riscadas vizinhas! \n");
-        if (todas_casas_conectadas()) printf("");
+        if (todas_casas_conectadas());
         else printf("Não existe caminho ortogonal entre todas as casas a Branco!\n");
     } else if (comando[0] == 'b' && comando[1] == ' ') {
         coordenada_t coord = parse_coord(comando + 2);
