@@ -319,15 +319,61 @@ void ler_comandos_jogo(char *comando) {
         gravar_estado(comando + 2);
     } else if (comando[0] == 'l' && comando[1] == ' ') {
         ler_estado(comando + 2);
+    } else if (comando[0] == 'r' && comando[1] == ' ') {
+        resolver_jogo();
     } else {
         printf("Comando desconhecido.\n");
+    }
+}
+
+int pode_colocar(int linha, int coluna, char letra) {
+    if (isupper(estado_atual->tabuleiro[linha][coluna])) return 0;
+
+    for (int j = 0; j < TAMANHO; j++) {
+        if (estado_atual->tabuleiro[linha][j] == letra) return 0;
+    }
+
+    for (int i = 0; i < TAMANHO; i++) {
+        if (estado_atual->tabuleiro[i][coluna] == letra) return 0;
+    }
+
+    return 1;
+}
+
+int resolver_recursivo() {
+    for (int i = 0; i < TAMANHO; i++) {
+        for (int j = 0; j < TAMANHO; j++) {
+            char c = estado_atual->tabuleiro[i][j];
+            if (islower(c)) {
+                char letra_maiuscula = toupper(c);
+                if (pode_colocar(i, j, letra_maiuscula)) {
+                    estado_atual->tabuleiro[i][j] = letra_maiuscula;
+                    if (resolver_recursivo()) {
+                        return 1;
+                    }
+                    estado_atual->tabuleiro[i][j] = c;
+                }
+                return 0; 
+            }
+        }
+    }
+
+    return verificar_vitoria();
+}
+
+void resolver_jogo() {
+    salvar_estado();
+    if (resolver_recursivo()) {
+        printf("Tabuleiro resolvido!\n");
+    } else {
+        printf("Não foi possível resolver o tabuleiro.\n");
     }
 }
 
 int main() {
     printf("Comandos : \n 's' - sair do jogo \n 'r' - riscar a coordenada \n 'b' - colocar a casa da coordenada Branca \n 'd' - voltar atrás \n 'v' - verificar as restrições \n \n");
     começar_jogo();
-
+    
     char comando[100];
 
     while (1) {
@@ -339,8 +385,6 @@ int main() {
         }
 
         comando[strcspn(comando, "\n")] = '\0';
-
-        ler_comandos_jogo(comando);
 
         if (verificar_vitoria()) {
             printf("Puzzle completo!\n");
