@@ -245,6 +245,7 @@ int verificar_vitoria() {
 }
 
 int pode_colocar(int linha, int coluna, char letra) {
+    if (estado_atual->tabuleiro[linha][coluna] == '#') return 0;
     if (isupper(estado_atual->tabuleiro[linha][coluna])) return 0;
 
     for (int j = 0; j < TAMANHO; j++)
@@ -255,6 +256,7 @@ int pode_colocar(int linha, int coluna, char letra) {
 
     return 1;
 }
+
 
 int aplicar_restricao_repeticoes_linhas() {
     for (int i = 0; i < TAMANHO; i++) {
@@ -359,21 +361,12 @@ int aplicar_restricao_riscadas_vizinhas() {
     for (int i = 0; i < TAMANHO; i++) {
         for (int j = 0; j < TAMANHO; j++) {
             if (estado_atual->tabuleiro[i][j] == '#') {
-                if (i > 0 && estado_atual->tabuleiro[i - 1][j] == '#') {
-                    estado_atual->tabuleiro[i][j] = 'a' + j;
-                    return 1;
-                }
-                if (i < TAMANHO - 1 && estado_atual->tabuleiro[i + 1][j] == '#') {
-                    estado_atual->tabuleiro[i][j] = 'a' + j;
-                    return 1;
-                }
-                if (j > 0 && estado_atual->tabuleiro[i][j - 1] == '#') {
-                    estado_atual->tabuleiro[i][j] = 'a' + j;
-                    return 1;
-                }
-                if (j < TAMANHO - 1 && estado_atual->tabuleiro[i][j + 1] == '#') {
-                    estado_atual->tabuleiro[i][j] = 'a' + j;
-                    return 1;
+                if ((i > 0 && estado_atual->tabuleiro[i - 1][j] == '#') ||
+                    (i < TAMANHO - 1 && estado_atual->tabuleiro[i + 1][j] == '#') ||
+                    (j > 0 && estado_atual->tabuleiro[i][j - 1] == '#') ||
+                    (j < TAMANHO - 1 && estado_atual->tabuleiro[i][j + 1] == '#')) {
+                    // Duas riscadas vizinhas – isso é uma violação
+                    return 0;  // Mas não vamos tentar corrigir automaticamente
                 }
             }
         }
@@ -392,6 +385,13 @@ int aplicar_primeira_restricao() {
     return 0;
 }
 
+void resolver_com_restricoes() {
+    int alterado;
+
+    do {
+        alterado = aplicar_primeira_restricao();
+    } while (alterado);
+}
 void começar_jogo() {
     estado_t *inicio = malloc(sizeof(estado_t));
     if (!inicio) exit(EXIT_FAILURE);
@@ -411,6 +411,9 @@ void ler_comandos_jogo(char *comando) {
         if (aplicar_primeira_restricao()){
             printf("Dica aplicada \n");
         } else printf("Nenhuma dica detetada \n");
+    } else if (comando[0] == 'A') {
+        resolver_com_restricoes();
+        printf("Não há mais dicas aplicaveis\n");
     } else if (comando[0] == 'v') {
         if (!verificar_repeticoes_letras_colunas() || !verificar_repeticoes_letras_linhas())
             printf("Existem letras repetidas na mesma linha ou coluna!\n");
