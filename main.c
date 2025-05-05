@@ -17,6 +17,7 @@ typedef struct {
 
 estado_t *estado_atual = NULL;
 
+// Protótipos
 void resolver_jogo(void);
 
 void salvar_estado() {
@@ -255,31 +256,140 @@ int pode_colocar(int linha, int coluna, char letra) {
     return 1;
 }
 
-int resolver_recursivo() {
+int aplicar_restricao_repeticoes_linhas() {
     for (int i = 0; i < TAMANHO; i++) {
+        int contagem[26] = {0};
         for (int j = 0; j < TAMANHO; j++) {
             char c = estado_atual->tabuleiro[i][j];
-            if (islower(c)) {
-                char maius = toupper(c);
-                if (pode_colocar(i, j, maius)) {
-                    estado_atual->tabuleiro[i][j] = maius;
-                    if (resolver_recursivo()) return 1;
-                    estado_atual->tabuleiro[i][j] = c;
+            if (isupper(c)) {
+                int idx = c - 'A';
+                contagem[idx]++;
+                if (contagem[idx] > 1) {
+                    estado_atual->tabuleiro[i][j] = '#'; 
+                    return 1; 
                 }
-                return 0;
             }
         }
     }
-    return verificar_vitoria();
+    return 0; 
 }
 
-void resolver_jogo() {
-    salvar_estado();
-    if (resolver_recursivo()) {
-        printf("Tabuleiro resolvido!\n");
-    } else {
-        printf("Não foi possível resolver o tabuleiro.\n");
+int aplicar_restricao_minisculas_linhas() {
+    for (int i = 0; i < TAMANHO; i++) {
+        for (int j = 0; j < TAMANHO; j++) {
+            if (islower(estado_atual->tabuleiro[i][j])) {
+                estado_atual->tabuleiro[i][j] = toupper(estado_atual->tabuleiro[i][j]);
+                return 1; 
+            }
+        }
     }
+    return 0; 
+}
+
+
+int aplicar_restricao_vizinhos_riscados_linhas() {
+    for (int i = 0; i < TAMANHO; i++) {
+        for (int j = 0; j < TAMANHO; j++) {
+            if (estado_atual->tabuleiro[i][j] == '#') {
+                int vizinho = 0;
+                if (i > 0 && isupper(estado_atual->tabuleiro[i - 1][j])) vizinho = 1;
+                if (i < TAMANHO - 1 && isupper(estado_atual->tabuleiro[i + 1][j])) vizinho = 1;
+                if (j > 0 && isupper(estado_atual->tabuleiro[i][j - 1])) vizinho = 1;
+                if (j < TAMANHO - 1 && isupper(estado_atual->tabuleiro[i][j + 1])) vizinho = 1;
+                if (!vizinho) {
+                    estado_atual->tabuleiro[i][j] = '#';
+                    return 1;
+                }
+            }
+        }
+    }
+    return 0;
+}
+
+
+int aplicar_restricao_repeticoes_colunas() {
+    for (int j = 0; j < TAMANHO; j++) {
+        int contagem[26] = {0};
+        for (int i = 0; i < TAMANHO; i++) {
+            char c = estado_atual->tabuleiro[i][j];
+            if (isupper(c)) {
+                int idx = c - 'A';
+                contagem[idx]++;
+                if (contagem[idx] > 1) {
+                    estado_atual->tabuleiro[i][j] = '#'; 
+                    return 1;
+                }
+            }
+        }
+    }
+    return 0; 
+}
+
+int aplicar_restricao_minisculas_colunas() {
+    for (int j = 0; j < TAMANHO; j++) {
+        for (int i = 0; i < TAMANHO; i++) {
+            if (islower(estado_atual->tabuleiro[i][j])) {
+                estado_atual->tabuleiro[i][j] = toupper(estado_atual->tabuleiro[i][j]);
+                return 1; 
+            }
+        }
+    }
+    return 0; 
+}
+
+int aplicar_restricao_vizinhos_riscados_colunas() {
+    for (int j = 0; j < TAMANHO; j++) {
+        for (int i = 0; i < TAMANHO; i++) {
+            if (estado_atual->tabuleiro[i][j] == '#') {
+                int vizinho = 0;
+                if (i > 0 && isupper(estado_atual->tabuleiro[i - 1][j])) vizinho = 1;
+                if (i < TAMANHO - 1 && isupper(estado_atual->tabuleiro[i + 1][j])) vizinho = 1;
+                if (j > 0 && isupper(estado_atual->tabuleiro[i][j - 1])) vizinho = 1;
+                if (j < TAMANHO - 1 && isupper(estado_atual->tabuleiro[i][j + 1])) vizinho = 1;
+                if (!vizinho) {
+                    estado_atual->tabuleiro[i][j] = '#';
+                    return 1; 
+                }
+            }
+        }
+    }
+    return 0; 
+}
+int aplicar_restricao_riscadas_vizinhas() {
+    for (int i = 0; i < TAMANHO; i++) {
+        for (int j = 0; j < TAMANHO; j++) {
+            if (estado_atual->tabuleiro[i][j] == '#') {
+                if (i > 0 && estado_atual->tabuleiro[i - 1][j] == '#') {
+                    estado_atual->tabuleiro[i][j] = 'a' + j;
+                    return 1;
+                }
+                if (i < TAMANHO - 1 && estado_atual->tabuleiro[i + 1][j] == '#') {
+                    estado_atual->tabuleiro[i][j] = 'a' + j;
+                    return 1;
+                }
+                if (j > 0 && estado_atual->tabuleiro[i][j - 1] == '#') {
+                    estado_atual->tabuleiro[i][j] = 'a' + j;
+                    return 1;
+                }
+                if (j < TAMANHO - 1 && estado_atual->tabuleiro[i][j + 1] == '#') {
+                    estado_atual->tabuleiro[i][j] = 'a' + j;
+                    return 1;
+                }
+            }
+        }
+    }
+    return 0;
+}
+
+int aplicar_primeira_restricao() {
+    if (aplicar_restricao_minisculas_colunas()) return 1;
+    if (aplicar_restricao_minisculas_linhas()) return 1;
+    if (aplicar_restricao_repeticoes_linhas()) return 1;
+    if (aplicar_restricao_repeticoes_colunas()) return 1;
+    if (aplicar_restricao_riscadas_vizinhas()) return 1; 
+    if (aplicar_restricao_vizinhos_riscados_linhas()) return 1;
+    if (aplicar_restricao_vizinhos_riscados_colunas()) return 1;
+    return 0;
 }
 
 void começar_jogo() {
@@ -297,6 +407,10 @@ void ler_comandos_jogo(char *comando) {
         exit(0);
     } else if (comando[0] == 'd') {
         desfazer();
+    } else if (comando[0] == 'a'){
+        if (aplicar_primeira_restricao()){
+            printf("Dica aplicada \n");
+        } else printf("Nenhuma dica detetada \n");
     } else if (comando[0] == 'v') {
         if (!verificar_repeticoes_letras_colunas() || !verificar_repeticoes_letras_linhas())
             printf("Existem letras repetidas na mesma linha ou coluna!\n");
@@ -316,9 +430,10 @@ void ler_comandos_jogo(char *comando) {
         gravar_txt(comando + 2);
     } else if (strncmp(comando, "l ", 2) == 0) {
         carregar_txt(comando + 2);
-    } else if (strcmp(comando, "r") == 0) {
-        resolver_jogo();
-    } else {
+    } //else if (strcmp(comando, "R") == 0) {
+        //resolver_jogo();
+    //} 
+    else {
         printf("Comando desconhecido.\n");
     }
 }
@@ -336,6 +451,7 @@ int main() {
             comando[strcspn(comando, "\n")] = '\0';
             ler_comandos_jogo(comando);
             if (verificar_vitoria()) {
+                printTabuleiro();
                 printf("Puzzle completo!\n");
                 break;
             }
