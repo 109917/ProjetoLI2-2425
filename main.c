@@ -17,7 +17,6 @@ typedef struct {
 
 estado_t *estado_atual = NULL;
 
-// Protótipos
 void resolver_jogo(void);
 
 void salvar_estado() {
@@ -365,8 +364,7 @@ int aplicar_restricao_riscadas_vizinhas() {
                     (i < TAMANHO - 1 && estado_atual->tabuleiro[i + 1][j] == '#') ||
                     (j > 0 && estado_atual->tabuleiro[i][j - 1] == '#') ||
                     (j < TAMANHO - 1 && estado_atual->tabuleiro[i][j + 1] == '#')) {
-                    // Duas riscadas vizinhas – isso é uma violação
-                    return 0;  // Mas não vamos tentar corrigir automaticamente
+                    return 0; 
                 }
             }
         }

@@ -1,102 +1,127 @@
+#include <CUnit/CUnit.h>
 #include <CUnit/Basic.h>
 #include "utils.h"
 
+void test_salvar_estado() {
+    começar_jogo();
+    salvar_estado();
+    CU_ASSERT_PTR_NOT_NULL(estado_atual->anterior);
+}
+
+void test_desfazer() {
+    começar_jogo();
+    salvar_estado();
+    desfazer();
+    CU_ASSERT_PTR_NULL(estado_atual->anterior);
+}
+
+void test_carregar_txt() {
+    começar_jogo();
+    gravar_txt("test.txt");
+    carregar_txt("test.txt");
+    CU_ASSERT_PTR_NOT_NULL(estado_atual);
+}
+
+void test_gravar_txt() {
+    começar_jogo();
+    gravar_txt("test.txt");
+    FILE *f = fopen("test.txt", "r");
+    CU_ASSERT_PTR_NOT_NULL(f);
+    fclose(f);
+}
+
 void test_parse_coord() {
-    coordenada_t c = parse_coord("a1");
-    CU_ASSERT_EQUAL(c.coluna, 0);
-    CU_ASSERT_EQUAL(c.linha, 0);
-
-    c = parse_coord("e5");
-    CU_ASSERT_EQUAL(c.coluna, 4);
-    CU_ASSERT_EQUAL(c.linha, 4);
+    coordenada_t coord = parse_coord("a1");
+    CU_ASSERT_EQUAL(coord.linha, 0);
+    CU_ASSERT_EQUAL(coord.coluna, 0);
 }
 
-void test_eh_coordenada() {
-    CU_ASSERT_TRUE(eh_coordenada("a1"));
-    CU_ASSERT_TRUE(eh_coordenada("e5"));
-    CU_ASSERT_FALSE(eh_coordenada("f1"));
-    CU_ASSERT_FALSE(eh_coordenada("a0"));
-    CU_ASSERT_FALSE(eh_coordenada("aa"));
-}
-
-void test_linha_valida() {
+void test_verificar_repeticoes_letras_linhas() {
     começar_jogo();
-    estado_atual->tabuleiro[0][0] = 'A';
-    estado_atual->tabuleiro[0][1] = 'B';
-    estado_atual->tabuleiro[0][2] = 'C';
-    estado_atual->tabuleiro[0][3] = 'D';
-    estado_atual->tabuleiro[0][4] = 'E';
-
-    CU_ASSERT_TRUE(linha_valida(0));
-
-    estado_atual->tabuleiro[0][3] = 'A'; 
-    CU_ASSERT_FALSE(linha_valida(0));
+    CU_ASSERT_TRUE(verificar_repeticoes_letras_linhas());
 }
 
-void test_coluna_valida() {
+void test_verificar_minisculas_linhas() {
     começar_jogo();
-    estado_atual->tabuleiro[0][0] = 'A';
-    estado_atual->tabuleiro[1][0] = 'B';
-    estado_atual->tabuleiro[2][0] = 'C';
-    estado_atual->tabuleiro[3][0] = 'D';
-    estado_atual->tabuleiro[4][0] = 'E';
-
-    CU_ASSERT_TRUE(coluna_valida(0));
-
-    estado_atual->tabuleiro[3][0] = 'A'; 
-    CU_ASSERT_FALSE(coluna_valida(0));
+    CU_ASSERT_FALSE(verificar_minisculas_linhas());
 }
 
-void test_casa_isolada() {
+void test_verificar_vizinhos_riscados_linhas() {
     começar_jogo();
-    for (int i = 0; i < TAMANHO; i++) 
-        for (int j = 0; j < TAMANHO; j++) 
-            estado_atual->tabuleiro[i][j] = '#';
+    CU_ASSERT_TRUE(verificar_vizinhos_riscados_linhas());
+}
 
-    estado_atual->tabuleiro[2][2] = 'A';
-    CU_ASSERT_TRUE(casa_isolada(2, 2));
+void test_linhas_validas() {
+    começar_jogo();
+    CU_ASSERT_TRUE(linhas_validas());
+}
 
-    estado_atual->tabuleiro[2][3] = 'B'; 
-    CU_ASSERT_FALSE(casa_isolada(2, 2));
+void test_verificar_repeticoes_letras_colunas() {
+    começar_jogo();
+    CU_ASSERT_TRUE(verificar_repeticoes_letras_colunas());
+}
+
+void test_verificar_minisculas_colunas() {
+    começar_jogo();
+    CU_ASSERT_FALSE(verificar_minisculas_colunas());
+}
+
+void test_verificar_vizinhos_riscados_colunas() {
+    começar_jogo();
+    CU_ASSERT_TRUE(verificar_vizinhos_riscados_colunas());
+}
+
+void test_colunas_validas() {
+    começar_jogo();
+    CU_ASSERT_TRUE(colunas_validas());
+}
+
+void test_todas_casas_conectadas() {
+    começar_jogo();
+    CU_ASSERT_TRUE(todas_casas_conectadas());
 }
 
 void test_verificar_vitoria() {
     começar_jogo();
-    char letras[] = { 'A', 'B', 'C', 'D', 'E' };
-
-    for (int i = 0; i < TAMANHO; i++) {
-        for (int j = 0; j < TAMANHO; j++) {
-            estado_atual->tabuleiro[i][j] = letras[j];
-        }
-    }
-
-    CU_ASSERT_TRUE(verificar_vitoria());
-
-    estado_atual->tabuleiro[1][1] = 'b';
     CU_ASSERT_FALSE(verificar_vitoria());
+}
+
+void test_pode_colocar() {
+    começar_jogo();
+    CU_ASSERT_TRUE(pode_colocar(0, 0, 'A'));
+    CU_ASSERT_FALSE(pode_colocar(0, 0, '#'));
 }
 
 int main() {
     if (CUE_SUCCESS != CU_initialize_registry())
         return CU_get_error();
 
-    CU_pSuite pSuite = NULL;
-    pSuite = CU_add_suite("Suite de Testes", NULL, NULL);
-
-    if (NULL == pSuite) {
+    CU_pSuite suite = CU_add_suite("Testes do Projeto", NULL, NULL);
+    if (!suite) {
         CU_cleanup_registry();
         return CU_get_error();
     }
 
-    CU_add_test(pSuite, "Teste parse_coord", test_parse_coord);
-    CU_add_test(pSuite, "Teste eh_coordenada", test_eh_coordenada);
-    CU_add_test(pSuite, "Teste linha_valida", test_linha_valida);
-    CU_add_test(pSuite, "Teste coluna_valida", test_coluna_valida);
-    CU_add_test(pSuite, "Teste casa_isolada", test_casa_isolada);
-    CU_add_test(pSuite, "Teste verificar_vitoria", test_verificar_vitoria);
+    CU_add_test(suite, "Testar salvar_estado", test_salvar_estado);
+    CU_add_test(suite, "Testar desfazer", test_desfazer);
+    CU_add_test(suite, "Testar carregar_txt", test_carregar_txt);
+    CU_add_test(suite, "Testar gravar_txt", test_gravar_txt);
+    CU_add_test(suite, "Testar parse_coord", test_parse_coord);
+    CU_add_test(suite, "Testar verificar_repeticoes_letras_linhas", test_verificar_repeticoes_letras_linhas);
+    CU_add_test(suite, "Testar verificar_minisculas_linhas", test_verificar_minisculas_linhas);
+    CU_add_test(suite, "Testar verificar_vizinhos_riscados_linhas", test_verificar_vizinhos_riscados_linhas);
+    CU_add_test(suite, "Testar linhas_validas", test_linhas_validas);
+    CU_add_test(suite, "Testar verificar_repeticoes_letras_colunas", test_verificar_repeticoes_letras_colunas);
+    CU_add_test(suite, "Testar verificar_minisculas_colunas", test_verificar_minisculas_colunas);
+    CU_add_test(suite, "Testar verificar_vizinhos_riscados_colunas", test_verificar_vizinhos_riscados_colunas);
+    CU_add_test(suite, "Testar colunas_validas", test_colunas_validas);
+    CU_add_test(suite, "Testar todas_casas_conectadas", test_todas_casas_conectadas);
+    CU_add_test(suite, "Testar verificar_vitoria", test_verificar_vitoria);
+    CU_add_test(suite, "Testar pode_colocar", test_pode_colocar);
 
     CU_basic_set_mode(CU_BRM_VERBOSE);
     CU_basic_run_tests();
     CU_cleanup_registry();
+
     return CU_get_error();
 }

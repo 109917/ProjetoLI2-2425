@@ -1,34 +1,53 @@
-#ifndef JOGO
-#define JOGO
+#ifndef UTILS_H
+#define UTILS_H
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <ctype.h>
+
 #define TAMANHO 5
-typedef struct {
-    int linha;
-    int coluna;
-} coordenada_t;
 
 typedef struct estado {
     char tabuleiro[TAMANHO][TAMANHO];
     struct estado *anterior;
 } estado_t;
 
+typedef struct {
+    int linha;
+    int coluna;
+} coordenada_t;
 
-extern estado_t *estado_atual;
-
-void começar_jogo();
 void salvar_estado();
 void desfazer();
-void printTabuleiro();
+void carregar_txt(const char *nome);
+void gravar_txt(const char *nome);
 coordenada_t parse_coord(const char *str);
-int eh_coordenada(const char *str);
+void printTabuleiro();
 void casaaBranco(coordenada_t coord);
 void casaRiscada(coordenada_t coord);
-int linha_valida(int linha);
-int coluna_valida(int coluna);
-int casa_isolada(int linha, int coluna);
+int verificar_repeticoes_letras_linhas();
+int verificar_minisculas_linhas();
+int verificar_vizinhos_riscados_linhas();
+int linhas_validas();
+int verificar_repeticoes_letras_colunas();
+int verificar_minisculas_colunas();
+int verificar_vizinhos_riscados_colunas();
+int colunas_validas();
+void dfs(int i, int j, int visitado[TAMANHO][TAMANHO], int *conectadas);
+int todas_casas_conectadas();
 int verificar_vitoria();
-void comandos(char *input);
-void gravar_jogo(const char *nome_ficheiro);
-void carregar_jogo(const char *nome_ficheiro);
-void selecionar_coord(coordenada_t coord);
+int pode_colocar(int linha, int coluna, char letra);
+int aplicar_restricao_repeticoes_linhas();
+int aplicar_restricao_minisculas_linhas();
+int aplicar_restricao_vizinhos_riscados_linhas();
+int aplicar_restricao_repeticoes_colunas();
+int aplicar_restricao_minisculas_colunas();
+int aplicar_restricao_vizinhos_riscados_colunas();
+int aplicar_restricao_riscadas_vizinhas();
+int aplicar_primeira_restricao();
+void resolver_com_restricoes();
+void começar_jogo();
+void ler_comandos_jogo(char *comando);
 
-#endif
+#endif 
