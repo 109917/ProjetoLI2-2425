@@ -17,7 +17,6 @@ typedef struct {
 
 estado_t *estado_atual = NULL;
 
-// Protótipos
 void resolver_jogo(void);
 
 void salvar_estado() {
