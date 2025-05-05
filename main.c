@@ -380,6 +380,7 @@ int aplicar_primeira_restricao() {
     if (aplicar_restricao_riscadas_vizinhas()) return 1; 
     if (aplicar_restricao_vizinhos_riscados_linhas()) return 1;
     if (aplicar_restricao_vizinhos_riscados_colunas()) return 1;
+    salvar_estado();
     return 0;
 }
 
@@ -387,6 +388,7 @@ void resolver_com_restricoes() {
     int alterado;
 
     do {
+        salvar_estado();
         alterado = aplicar_primeira_restricao();
     } while (alterado);
 }
@@ -406,6 +408,7 @@ void ler_comandos_jogo(char *comando) {
     } else if (comando[0] == 'd') {
         desfazer();
     } else if (comando[0] == 'a'){
+        salvar_estado();
         if (aplicar_primeira_restricao()){
             printf("Dica aplicada \n");
         } else printf("Nenhuma dica detetada \n");
