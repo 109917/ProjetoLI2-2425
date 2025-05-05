@@ -317,7 +317,7 @@ void ler_comandos_jogo(char *comando) {
         gravar_txt(comando + 2);
     } else if (strncmp(comando, "l ", 2) == 0) {
         carregar_txt(comando + 2);
-    } else if (strcmp(comando, "resolver") == 0) {
+    } else if (strcmp(comando, "r") == 0) {
         resolver_jogo();
     } else {
         printf("Comando desconhecido.\n");
