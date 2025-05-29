@@ -49,8 +49,7 @@ void carregar_txt(const char *nome) {
     if (!novo) exit(EXIT_FAILURE);
 
     int c, i = 0, j = 0;
-    while ((c = fgetc(f)) != EOF)
-    {
+    while ((c = fgetc(f)) != EOF){
         if (c == '\n') {
             i++;
             j = 0;
@@ -58,7 +57,6 @@ void carregar_txt(const char *nome) {
         }
         novo->tabuleiro[i][j] = c;
         j++;
-        printf("%c", c);
     }
         
     novo->anterior = NULL;
