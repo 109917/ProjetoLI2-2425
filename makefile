@@ -12,8 +12,8 @@ all: $(EXEC)
 $(EXEC): $(SRC)
 	$(CC) $(CFLAGS) -o $(EXEC) $(SRC)
 
-run_tests: $(SRC) $(TEST_SRC)
-	$(CC) $(CFLAGS) -o $(TEST_EXEC) $(SRC) $(TEST_SRC) $(LIBS)
+testar: $(SRC) $(TEST_SRC)
+	$(CC) $(CFLAGS) -DTEST_BUILD -o $(TEST_EXEC) $(SRC) $(TEST_SRC) $(LIBS)
 	./$(TEST_EXEC)
 	@gcov $(SRC) > /dev/null
 	@echo "Cobertura de código:"

@@ -38,6 +38,7 @@ void desfazer() {
 }
 
 void carregar_txt(const char *nome) {
+    printf("Carregando jogo do ficheiro: %s\n", nome);
     FILE *f = fopen(nome, "r");
     if (!f) {
         printf("Erro ao abrir ficheiro TXT.\n");
@@ -47,21 +48,48 @@ void carregar_txt(const char *nome) {
     estado_t *novo = malloc(sizeof(estado_t));
     if (!novo) exit(EXIT_FAILURE);
 
-    for (int i = 0; i < TAMANHO; i++) {
-        for (int j = 0; j < TAMANHO; j++) {
-            if (fscanf(f, " %c", &novo->tabuleiro[i][j]) != 1) {
-                printf("Erro ao ler o tabuleiro no ficheiro.\n");
-                fclose(f);
-                free(novo);
-                return;
-            }
+    int c, i = 0, j = 0;
+    while ((c = fgetc(f)) != EOF)
+    {
+        if (c == '\n') {
+            i++;
+            j = 0;
+            continue;
         }
+        novo->tabuleiro[i][j] = c;
+        j++;
+        printf("%c", c);
     }
-
+        
     novo->anterior = NULL;
     if (estado_atual) free(estado_atual);
     estado_atual = novo;
     fclose(f);
+
+    // FILE *f = fopen(nome, "r");
+    // if (!f) {
+    //     printf("Erro ao abrir ficheiro TXT.\n");
+    //     return;
+    // }
+
+    // estado_t *novo = malloc(sizeof(estado_t));
+    // if (!novo) exit(EXIT_FAILURE);
+
+    // for (int i = 0; i < TAMANHO; i++) {
+    //     for (int j = 0; j < TAMANHO; j++) {
+    //         if (fscanf(f, " %c", &novo->tabuleiro[i][j]) != 1) {
+    //             printf("Erro ao ler o tabuleiro no ficheiro.\n");
+    //             fclose(f);
+    //             free(novo);
+    //             return;
+    //         }
+    //     }
+    // }
+
+    // novo->anterior = NULL;
+    // if (estado_atual) free(estado_atual);
+    // estado_atual = novo;
+    // fclose(f);
 }
 
 void gravar_txt(const char *nome) {
