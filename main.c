@@ -172,16 +172,28 @@ int verificar_minisculas() {
     return 1;
 }
 
+int verificar_vizinhos_riscados_casa(int i, int j) {
+    if (estado_atual->tabuleiro[i][j] != '#' || estado_atual->tabuleiro[i][j] == '#'){
+        int vizinho = 0;
+        if (i > 0 && (estado_atual->tabuleiro[i - 1][j] == '#')) vizinho++;
+        if (i < estado_atual->linhas - 1 && (estado_atual->tabuleiro[i + 1][j] == '#')) vizinho++;
+        if (j > 0 && (estado_atual->tabuleiro[i][j - 1] == '#')) vizinho++;
+        if (j < estado_atual->colunas - 1 && (estado_atual->tabuleiro[i][j + 1] == '#')) vizinho++;
+        if (vizinho > 0) return 0;
+    }
+    return 1;
+}
+
 int verificar_vizinhos_riscados() {
     for (int j = 0; j < estado_atual->colunas; j++) {
         for (int i = 0; i < estado_atual->linhas; i++) {
-            if (estado_atual->tabuleiro[i][j] == '#'){
+            if (estado_atual->tabuleiro[i][j] != '#' || estado_atual->tabuleiro[i][j] == '#'){
                 int vizinho = 0;
-                if (i > 0 && isupper(estado_atual->tabuleiro[i - 1][j])) vizinho++;
-                if (i < estado_atual->linhas - 1 && isupper(estado_atual->tabuleiro[i + 1][j])) vizinho++;
-                if (j > 0 && isupper(estado_atual->tabuleiro[i][j - 1])) vizinho++;
-                if (j < estado_atual->colunas - 1 && isupper(estado_atual->tabuleiro[i][j + 1])) vizinho++;
-                if (vizinho < 4) return 0;
+                if (i > 0 && (estado_atual->tabuleiro[i - 1][j] == '#')) vizinho++;
+                if (i < estado_atual->linhas - 1 && (estado_atual->tabuleiro[i + 1][j] == '#')) vizinho++;
+                if (j > 0 && (estado_atual->tabuleiro[i][j - 1] == '#')) vizinho++;
+                if (j < estado_atual->colunas - 1 && (estado_atual->tabuleiro[i][j + 1] == '#')) vizinho++;
+                if (vizinho > 0) return 0;
             }
         }
     }
@@ -290,23 +302,6 @@ int verificar_vitoria() {
     todas_casas_conectadas();
 }
 
-int pode_colocar(int linha, int coluna, char letra){
-    if (estado_atual->tabuleiro[linha][coluna] == '#') return 0;
-    if (isupper(estado_atual->tabuleiro[linha][coluna])) return 0;
-
-    for (int j = 0; j < estado_atual->colunas; j++){
-        if (estado_atual->tabuleiro[linha][j] == letra)
-        return 0;
-    }
-
-    for (int i = 0; i < estado_atual->linhas; i++){
-        if (estado_atual->tabuleiro[i][coluna] == letra)
-        return 0;
-    }
-
- return 1;
-}
-
 int aplicar_restricao_repeticoes_linhas(){
     for (int i = 0; i < estado_atual->linhas; i++){
         int contagem[26] = {0};
@@ -315,15 +310,15 @@ int aplicar_restricao_repeticoes_linhas(){
             if (isupper(c)) {
                 int idx = c - 'A';
                 contagem[idx]++;
-                if (contagem[idx] > 1) {
-                    estado_atual->tabuleiro[i][j] = '#';
-                    return 1;
+                if (contagem[idx] > 1 ) {
+                    return 0;  // Letra repetida => inválido
                 }
             }
         }
     }
-    return 0;
+    return 1;  // Nenhuma repetição
 }
+
 
 int aplicar_restricao_minisculas(){
     for (int i = 0; i < estado_atual->linhas; i++) {
@@ -340,16 +335,10 @@ int aplicar_restricao_minisculas(){
 int aplicar_restricao_vizinhos_riscados() {
     for (int i = 0; i < estado_atual->linhas; i++) {
         for (int j = 0; j < estado_atual->colunas; j++) {
-            if (estado_atual->tabuleiro[i][j] != '#') {
-                int vizinho = 0;
-                if (i > 0 && isupper(estado_atual->tabuleiro[i - 1][j])) vizinho++;
-                if (i < estado_atual->linhas - 1 && isupper(estado_atual->tabuleiro[i + 1][j])) vizinho++;
-                if (j > 0 && isupper(estado_atual->tabuleiro[i][j - 1])) vizinho++;
-                if (j < estado_atual->colunas - 1 && isupper(estado_atual->tabuleiro[i][j + 1])) vizinho++;
-                if (vizinho == 0) {
-                    estado_atual->tabuleiro[i][j] = '#';
-                    return 1;
-                }
+            if (estado_atual->tabuleiro[i][j] == '#') continue;
+            if (verificar_vizinhos_riscados_casa(i, j)){
+            estado_atual->tabuleiro[i][j] = '#';
+            return 1;
             }
         }
     }
@@ -364,34 +353,50 @@ int aplicar_restricao_repeticoes_colunas() {
             if (isupper(c)) {
                 int idx = c - 'A';
                 contagem[idx]++;
-                if (contagem[idx] > 1) {
-                    estado_atual->tabuleiro[i][j] = '#';
-                    return 1;
+                if (contagem[idx] > 1 ) {
+                    return 0;  // Letra repetida => inválido
                 }
             }
         }
     }
-    return 0;
+    return 1;  // Nenhuma repetição
 }
+
 
 
 int aplicar_primeira_restricao(){
     if (aplicar_restricao_minisculas()) return 1;
-    if (aplicar_restricao_repeticoes_linhas()) return 1;
-    if (aplicar_restricao_repeticoes_colunas()) return 1;
+    if (aplicar_restricao_repeticoes_colunas()) aplicar_restricao_vizinhos_riscados();
+    if (aplicar_restricao_repeticoes_linhas()) aplicar_restricao_vizinhos_riscados();
     if (aplicar_restricao_vizinhos_riscados()) return 1;
+
+
     salvar_estado();
     return 0;
 }
 
-void resolver_com_restricoes(){
+void resolver_com_restricoes() {
     int alterado;
+    int aux = estado_atual->linhas * estado_atual->colunas;
 
     do {
-        salvar_estado();
-        alterado = aplicar_primeira_restricao();
+        alterado = 1;
+
+        for (int i = 0; i < estado_atual->linhas; i++) {
+            for (int j = 0; j < estado_atual->colunas; j++) {
+                printf("%d %d \n", i, j);
+                aplicar_primeira_restricao();
+
+            }
+        }
+        aux--;
+        if (aux < 0) alterado = 0;
     } while (alterado);
+
+
 }
+
+
 
 // void começar_jogo()
 // {
