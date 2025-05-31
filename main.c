@@ -3,8 +3,6 @@
 #include <string.h>
 #include <ctype.h>
 
-#define TAMANHO 5
-
 typedef struct estado
 {
  //char tabuleiro[TAMANHO][TAMANHO];
@@ -162,6 +160,33 @@ void casaRiscada(coordenada_t coord){
     estado_atual->tabuleiro[i][j] = '#';
 }
 
+int verificar_minisculas() {
+    for (int j = 0; j < estado_atual->colunas; j++) {
+        for (int i = 0; i < estado_atual->linhas; i++) {
+            if (islower(estado_atual->tabuleiro[i][j])) {
+                return 0;
+            }
+        }
+    }
+    return 1;
+}
+
+int verificar_vizinhos_riscados() {
+    for (int j = 0; j < estado_atual->colunas; j++) {
+        for (int i = 0; i < estado_atual->linhas; i++) {
+            if (estado_atual->tabuleiro[i][j] == '#'){
+                int vizinho = 0;
+                if (i > 0 && isupper(estado_atual->tabuleiro[i - 1][j])) vizinho++;
+                if (i < estado_atual->linhas - 1 && isupper(estado_atual->tabuleiro[i + 1][j])) vizinho++;
+                if (j > 0 && isupper(estado_atual->tabuleiro[i][j - 1])) vizinho++;
+                if (j < estado_atual->colunas - 1 && isupper(estado_atual->tabuleiro[i][j + 1])) vizinho++;
+                if (vizinho > 0) return 0;
+            }
+        }
+    }
+    return 1;
+}
+
 int verificar_repeticoes_letras_linhas(){
     for (int i = 0; i < estado_atual->linhas; i++){
         int contagem[26] = {0};
@@ -177,33 +202,10 @@ int verificar_repeticoes_letras_linhas(){
     return 1;
 }
 
-int verificar_minisculas_linhas(){
-    for (int i = 0; i < estado_atual->linhas; i++)
-    for (int j = 0; j < estado_atual->colunas; j++)
-    if (islower(estado_atual->tabuleiro[i][j])) return 0;
-    return 1;
-}
-
-int verificar_vizinhos_riscados_linhas(){
-    for (int i = 0; i < estado_atual->linhas; i++){
-        for (int j = 0; j < estado_atual->colunas; j++){
-            if (estado_atual->tabuleiro[i][j] == '#'){
-                int vizinho = 0;
-                    if (i > 0 && isupper(estado_atual->tabuleiro[i - 1][j])) vizinho = 1;
-                    if (i < estado_atual->linhas - 1 && isupper(estado_atual->tabuleiro[i + 1][j])) vizinho = 1;
-                    if (j > 0 && isupper(estado_atual->tabuleiro[i][j - 1])) vizinho = 1;
-                    if (j < estado_atual->colunas - 1 && isupper(estado_atual->tabuleiro[i][j + 1])) vizinho = 1;
-                    if (!vizinho) return 0;
-                }
-            }
-        }
-    return 1;
-}
-
 int linhas_validas() {
     return verificar_repeticoes_letras_linhas() &&
-    verificar_minisculas_linhas() &&
-    verificar_vizinhos_riscados_linhas();
+    verificar_minisculas() &&
+    verificar_vizinhos_riscados();
 }
 
 int verificar_repeticoes_letras_colunas(){
@@ -222,33 +224,12 @@ int verificar_repeticoes_letras_colunas(){
     return 1;
 }
 
-int verificar_minisculas_colunas(){
-    for (int j = 0; j < estado_atual->colunas; j++)
-    for (int i = 0; i < estado_atual->linhas; i++)
-    if (islower(estado_atual->tabuleiro[i][j])) return 0;
-    return 1;
-}
 
-int verificar_vizinhos_riscados_colunas() {
-    for (int j = 0; j < estado_atual->colunas; j++) {
-        for (int i = 0; i < estado_atual->linhas; i++) {
-            if (estado_atual->tabuleiro[i][j] == '#'){
-                int vizinho = 0;
-                if (i > 0 && isupper(estado_atual->tabuleiro[i - 1][j])) vizinho = 1;
-                if (i < estado_atual->linhas - 1 && isupper(estado_atual->tabuleiro[i + 1][j])) vizinho = 1;
-                if (j > 0 && isupper(estado_atual->tabuleiro[i][j - 1])) vizinho = 1;
-                if (j < estado_atual->colunas - 1 && isupper(estado_atual->tabuleiro[i][j + 1])) vizinho = 1;
-                if (!vizinho) return 0;
-            }
-        }
-    }
-    return 1;
-}
 
 int colunas_validas(){
     return verificar_repeticoes_letras_colunas() &&
-    verificar_minisculas_colunas() &&
-    verificar_vizinhos_riscados_colunas();
+    verificar_minisculas() &&
+    verificar_vizinhos_riscados();
 }
 
 void dfs(int i, int j, int **visitado, int *conectadas){
