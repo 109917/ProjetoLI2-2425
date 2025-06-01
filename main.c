@@ -393,6 +393,22 @@ void resolver_com_restricoes() {
 
 
 
+int desfazer() {
+    if (estado_atual && estado_atual->anterior) {
+        estado_t *temp = estado_atual;
+        estado_atual = estado_atual->anterior;
+        for (int i = 0; i < temp->linhas; i++) {
+            free(temp->tabuleiro[i]);
+        }
+        free(temp->tabuleiro);
+        free(temp);
+        return 1;
+    } else {
+        printf("Não há mais estados para desfazer.\n");
+        return 0;
+    }
+    return 0;
+}
 
 void resolver_jogo(){
     int aux = estado_atual->linhas;
