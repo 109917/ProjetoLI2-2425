@@ -6,10 +6,12 @@
 #include <string.h>
 #include <ctype.h>
 
-#define TAMANHO 5
 
-typedef struct estado {
-    char tabuleiro[TAMANHO][TAMANHO];
+typedef struct estado
+{
+    char **tabuleiro;
+    int linhas;
+    int colunas;
     struct estado *anterior;
 } estado_t;
 
@@ -34,10 +36,10 @@ int verificar_repeticoes_letras_colunas();
 int verificar_minisculas_colunas();
 int verificar_vizinhos_riscados_colunas();
 int colunas_validas();
-void dfs(int i, int j, int visitado[TAMANHO][TAMANHO], int *conectadas);
+void dfs(int i, int j, int **visitado, int *conectadas);
 int todas_casas_conectadas();
 int verificar_vitoria();
-int pode_colocar(int linha, int coluna, char letra);
+// int pode_colocar(int linha, int coluna, char letra);
 int aplicar_restricao_repeticoes_linhas();
 int aplicar_restricao_minisculas_linhas();
 int aplicar_restricao_vizinhos_riscados_linhas();
@@ -47,7 +49,7 @@ int aplicar_restricao_vizinhos_riscados_colunas();
 int aplicar_restricao_riscadas_vizinhas();
 int aplicar_primeira_restricao();
 void resolver_com_restricoes();
-void começar_jogo();
+void comecar_jogo();
 void ler_comandos_jogo(char *comando);
 
 #endif 
