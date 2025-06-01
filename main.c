@@ -50,6 +50,12 @@ void desfazer() {
 }
 
 void carregar_txt(const char *nome) {
+    if(estado_atual){
+        // libertar eventuais estados anteriores
+        libertar_estado(estado_atual);
+        estado_atual = NULL;
+    }
+
     printf("Carregando jogo do ficheiro: %s\n", nome);
     FILE *f = fopen(nome, "r");
     if (!f) {
@@ -92,13 +98,6 @@ void carregar_txt(const char *nome) {
     }
 
     novo->anterior = NULL;
-    if (estado_atual) {
-        for (int i = 0; i < estado_atual->linhas; i++) {
-            free(estado_atual->tabuleiro[i]);
-        }
-        free(estado_atual->tabuleiro);
-        free(estado_atual);
-    }
     estado_atual = novo;
     fclose(f);
     printf("Jogo carregado com sucesso!\n");
