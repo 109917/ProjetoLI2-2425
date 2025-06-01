@@ -390,32 +390,46 @@ void resolver_com_restricoes() {
 
 }
 
-void comecar_jogo(){
 
-    if (estado_atual)
-    {
-        libertar_estado(estado_atual);
+
+
+
+void resolver_jogo(){
+    int aux = estado_atual->linhas;
+    int i, j;
+    while (desfazer()){
+        desfazer();
     }
-    estado_t *inicio = malloc(sizeof(estado_t));
-    if (!inicio)
-    {
-        free(inicio);
-        exit(EXIT_FAILURE);
-    }
-    inicio->linhas = 5;
-    inicio->colunas = 5;
-    inicio->tabuleiro = malloc(inicio->linhas * sizeof(char *));
-    for (int i = 0; i < inicio->linhas; i++)
-    {
-        inicio->tabuleiro[i] = malloc(inicio->colunas * sizeof(char));
-        for (int j = 0; j < inicio->colunas; j++)
-        {
-            inicio->tabuleiro[i][j] = 'a' + j;
+
+    while (aux >= 0){
+        for (i = 0; i < estado_atual->linhas; i++ ){
+            for (j = 0; j < estado_atual->colunas; j++ ){
+                aplicar_restricao_vizinhos_riscados(i,j);
+                resolver_com_restricoes();
+                if (verificar_vitoria()) break;
+                else {
+                    while (desfazer()){
+                        defazer();
+                    }
+                }
+            }
         }
+    aux --;
     }
-    inicio->anterior = NULL;
-    estado_atual = inicio;
 }
+
+
+// void começar_jogo()
+// {
+// estado_t *inicio = malloc(sizeof(estado_t));
+// if (!inicio)
+// exit(EXIT_FAILURE);
+// for (int i = 0; i < TAMANHO; i++)
+// for (int j = 0; j < TAMANHO; j++)
+// inicio->tabuleiro[i][j] = 'a' + j;
+// inicio->anterior = NULL;
+// estado_atual = inicio;
+// }
 
 void ler_comandos_jogo(char *comando){
     if (comando[0] == 's') {
@@ -433,6 +447,9 @@ void ler_comandos_jogo(char *comando){
     } else if (comando[0] == 'A') {
         resolver_com_restricoes();
         printf("Não há mais dicas aplicaveis\n");
+    }else if (comando[0] == 'R'){
+        resolver_jogo();
+        printf("Jogo resolvido \n");
     } else if (comando[0] == 'v') {
         if (!aplicar_restricao_repeticoes_linhas() || !aplicar_restricao_repeticoes_colunas()) printf("Existem letras repetidas na mesma linha ou coluna!\n");
         if (!verificar_minisculas()) printf("Existem letras minúsculas no tabuleiro!\n");
@@ -459,7 +476,7 @@ void ler_comandos_jogo(char *comando){
 #ifndef TEST_BUILD
 
 int main() {
-    printf("Comandos :\n 's' - sair do jogo\n 'r' - riscar coordenada\n 'b' - casa Branca\n 'd' - desfazer\n 'v' - verificar restrições\n 'r' - resolver\n 'g' <jogo.txt> - gravar o jogo no ficheiro jogo.txt \n 'l' <jogo.txt> - ler o jogo gravado no ficheiro jogo.txt \n \n");
+    printf("Comandos :\n 's' - sair do jogo\n 'r' - riscar coordenada\n 'b' - casa Branca\n 'd' - desfazer\n 'v' - verificar restrições\n 'a' - aplicar uma dica\n 'A' - aplicar dicas até não alterar ser possivel alterar o tabuleiro\n 'R' - resolver\n 'g' <jogo.txt> - gravar o jogo no ficheiro jogo.txt \n 'l' <jogo.txt> - ler o jogo gravado no ficheiro jogo.txt \n \n");
  //começar_jogo();
 
     char comando[100];
