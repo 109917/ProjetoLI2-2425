@@ -421,17 +421,17 @@ void resolver_com_restricoes() {
 
         for (int i = 0; i < estado_atual->linhas; i++) {
             for (int j = 0; j < estado_atual->colunas; j++) {
-                //printf("%d %d \n", i, j);
                 aplicar_primeira_restricao();
-
+                salvar_estado();
+                if (!todas_casas_conectadas()){
+                    desfazer();
+                    continue;
+                }
             }
         }
         aux--;
         if (aux < 0) alterado = 0;
     } while (alterado);
-
-
-}
 
 
 
