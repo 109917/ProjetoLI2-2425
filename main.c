@@ -171,6 +171,7 @@ void casaRiscada(coordenada_t coord){
 int verificar_minisculas() {
     for (int j = 0; j < estado_atual->colunas; j++) {
         for (int i = 0; i < estado_atual->linhas; i++) {
+            if (estado_atual->tabuleiro[i][j] == '#') continue;
             if (islower(estado_atual->tabuleiro[i][j])) {
                 return 0;
             }
@@ -225,19 +226,6 @@ int verificar_vizinhos_riscados() {
     }
     return 1;
 }
-
-int linhas_validas() {
-    return verificar_repeticoes_letras_linhas() &&
-    verificar_minisculas() &&
-    verificar_vizinhos_riscados();
-}
-
-int colunas_validas(){
-    return verificar_repeticoes_letras_colunas() &&
-    verificar_minisculas() &&
-    verificar_vizinhos_riscados();
-}
-
 void dfs(int i, int j, int **visitado, int *conectadas){
     if (i < 0 || i >= estado_atual->linhas || j < 0 || j >= estado_atual->colunas) return;
     if (visitado[i][j]) return;
@@ -252,57 +240,48 @@ void dfs(int i, int j, int **visitado, int *conectadas){
     dfs(i, j - 1, visitado, conectadas);
 }
 
-int todas_casas_conectadas(){
-    // int visitado[TAMANHO][TAMANHO] = {{0}};
+int todas_casas_conectadas() {
     int total = 0, conectadas = 0;
     int i0 = -1, j0 = -1;
 
-    int **visitado;
-
-    // reservar memoria para as linhas e colunas
-    visitado = malloc(estado_atual->linhas * sizeof(int *));
+    int **visitado = malloc(estado_atual->linhas * sizeof(int *));
     for (int i = 0; i < estado_atual->linhas; i++) {
-        visitado[i] = malloc(estado_atual->colunas * sizeof(int));
+        visitado[i] = calloc(estado_atual->colunas, sizeof(int));
     }
 
-    // colocar todas as posições com 0
     for (int i = 0; i < estado_atual->linhas; i++) {
         for (int j = 0; j < estado_atual->colunas; j++) {
-        visitado[i][j] = 0;
-        }
-    }
-
-    for (int i = 0; i < estado_atual->linhas; i++){
-        for (int j = 0; j < estado_atual->colunas; j++)
-            if (isupper(estado_atual->tabuleiro[i][j])){
+            if (isupper(estado_atual->tabuleiro[i][j])) {
                 total++;
-                if (i0 == -1){
+                if (i0 == -1) {
                     i0 = i;
                     j0 = j;
                 }
             }
-
-        if (total == 0) {
-            for (int i = 0; i < estado_atual->linhas; i++)
-                free(visitado[i]);
-            free(visitado);
-            return 1;
         }
-        dfs(i0, j0, visitado, &conectadas);
     }
 
-    for (int i = 0; i < estado_atual->linhas; i++)
-        free(visitado[i]);
+    if (total == 0) {
+        for (int i = 0; i < estado_atual->linhas; i++) free(visitado[i]);
+        free(visitado);
+        return 1;
+    }
+
+    dfs(i0, j0, visitado, &conectadas);
+
+    for (int i = 0; i < estado_atual->linhas; i++) free(visitado[i]);
     free(visitado);
 
     return conectadas == total;
 }
 
+
 int verificar_vitoria() {
-    return estado_atual &&
-    linhas_validas() &&
-    colunas_validas() &&
-    todas_casas_conectadas();
+    return aplicar_restricao_repeticoes_colunas() 
+    && aplicar_restricao_repeticoes_linhas() 
+    && verificar_minisculas() 
+    && verificar_vizinhos_riscados() 
+    && todas_casas_conectadas();
 }
 
 int linha_sem_repeticoes(int i) {
@@ -434,30 +413,18 @@ void resolver_com_restricoes() {
 }
 
 
-void comecar_jogo()
-{
-    if (estado_atual) {
-        libertar_estado(estado_atual);
-    }
 
-    estado_t *inicio = malloc(sizeof(estado_t));
-    if (!inicio){
-        free(inicio);
-        exit(EXIT_FAILURE);
-    }
-        
-    inicio->linhas = 5; 
-    inicio->colunas = 5;
-    inicio->tabuleiro = malloc(inicio->linhas * sizeof(char *));
-    for (int i = 0; i < inicio->linhas; i++) {
-        inicio->tabuleiro[i] = malloc(inicio->colunas * sizeof(char));
-        for (int j = 0; j < inicio->colunas; j++){
-            inicio->tabuleiro[i][j] = 'a' + j; 
-        }
-    }
-    inicio->anterior = NULL;
-    estado_atual = inicio;
-}
+// void começar_jogo()
+// {
+// estado_t *inicio = malloc(sizeof(estado_t));
+// if (!inicio)
+// exit(EXIT_FAILURE);
+// for (int i = 0; i < TAMANHO; i++)
+// for (int j = 0; j < TAMANHO; j++)
+// inicio->tabuleiro[i][j] = 'a' + j;
+// inicio->anterior = NULL;
+// estado_atual = inicio;
+// }
 
 void ler_comandos_jogo(char *comando){
     if (comando[0] == 's') {
@@ -471,11 +438,12 @@ void ler_comandos_jogo(char *comando){
         }
         else
         printf("Nenhuma dica detetada \n");
+        
     } else if (comando[0] == 'A') {
         resolver_com_restricoes();
         printf("Não há mais dicas aplicaveis\n");
     } else if (comando[0] == 'v') {
-        if (!verificar_repeticoes_letras_colunas() || !verificar_repeticoes_letras_linhas()) printf("Existem letras repetidas na mesma linha ou coluna!\n");
+        if (!aplicar_restricao_repeticoes_linhas() || !aplicar_restricao_repeticoes_colunas()) printf("Existem letras repetidas na mesma linha ou coluna!\n");
         if (!verificar_minisculas()) printf("Existem letras minúsculas no tabuleiro!\n");
         if (!verificar_vizinhos_riscados()) printf("Existem casas riscadas sem vizinhos brancos!\n");
         if (!todas_casas_conectadas()) printf("Não existe caminho ortogonal entre todas as casas a Branco!\n");
@@ -497,12 +465,11 @@ void ler_comandos_jogo(char *comando){
     printf("Comando desconhecido.\n");
     }
 }
-
 #ifndef TEST_BUILD
 
 int main() {
     printf("Comandos :\n 's' - sair do jogo\n 'r' - riscar coordenada\n 'b' - casa Branca\n 'd' - desfazer\n 'v' - verificar restrições\n 'r' - resolver\n 'g' <jogo.txt> - gravar o jogo no ficheiro jogo.txt \n 'l' <jogo.txt> - ler o jogo gravado no ficheiro jogo.txt \n \n");
-    comecar_jogo();
+ //começar_jogo();
 
     char comando[100];
 
@@ -513,7 +480,7 @@ int main() {
             comando[strcspn(comando, "\n")] = '\0';
             ler_comandos_jogo(comando);
             printTabuleiro();
-            if (verificar_vitoria()) {
+        if (verificar_vitoria()) {
                 printf("Puzzle completo!\n");
                 break;
             }
