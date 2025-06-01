@@ -277,12 +277,14 @@ int todas_casas_conectadas() {
 
 
 int verificar_vitoria() {
-    return aplicar_restricao_repeticoes_colunas() 
+    if (aplicar_restricao_repeticoes_colunas() 
     && aplicar_restricao_repeticoes_linhas() 
     && verificar_minisculas() 
     && verificar_vizinhos_riscados() 
-    && todas_casas_conectadas();
+    && todas_casas_conectadas()) return 1;
+    else return 0;
 }
+
 
 int linha_sem_repeticoes(int i) {
     if (i < 0 || i >= estado_atual->linhas) return 0;
