@@ -90,6 +90,19 @@ void test_aplicar_primeira_restricao() {
 //     CU_ASSERT_TRUE(colunas_validas());
 // }
 
+void test_jogo_resolvido_por_resolver() {
+    comecar_jogo();
+    CU_ASSERT_FALSE(verificar_vitoria());
+    // função verificar vitória usa internamente estas funções
+    // por isso é feito o teste a cada uma para, em caso de falha,
+    // perceber em que ponto falhou
+    // CU_ASSERT_EQUAL(aplicar_restricao_repeticoes_colunas(), 0); 
+    // CU_ASSERT_EQUAL(aplicar_restricao_repeticoes_linhas(), 0); 
+    // CU_ASSERT_EQUAL(verificar_minisculas(), 0); 
+    // CU_ASSERT_EQUAL(verificar_vizinhos_riscados(), 0); 
+    // CU_ASSERT_EQUAL(todas_casas_conectadas(), 0); 
+}
+
 void test_jogo_resolvido() {
     carregar_txt("solucao.txt");
     //CU_ASSERT_TRUE(verificar_vitoria());
@@ -100,7 +113,7 @@ void test_jogo_resolvido() {
     CU_ASSERT_EQUAL(aplicar_restricao_repeticoes_linhas(), 1); 
     CU_ASSERT_EQUAL(verificar_minisculas(), 1); 
     CU_ASSERT_EQUAL(verificar_vizinhos_riscados(), 1); 
-    CU_ASSERT_EQUAL(todas_casas_conectadas(), 1 ); 
+    CU_ASSERT_EQUAL(todas_casas_conectadas(), 1); 
 }
 
 int main() {
@@ -124,6 +137,7 @@ int main() {
     CU_add_test(suite, "Testar verificar_vitoria", test_verificar_vitoria);
     CU_add_test(suite, "Testar aplicar_primeira_restricao", test_aplicar_primeira_restricao);
     //CU_add_test(suite, "Testar resolver_com_restricoes", test_resolver_com_restricoes);
+    CU_add_test(suite, "Testar jogo_resolvido_por_resolver", test_jogo_resolvido_por_resolver);
     CU_add_test(suite, "Testar jogo_resolvido", test_jogo_resolvido);
 
     CU_basic_set_mode(CU_BRM_VERBOSE);
