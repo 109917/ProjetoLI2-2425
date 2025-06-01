@@ -111,6 +111,17 @@ void test_resolver_com_restricoes() {
     CU_ASSERT_TRUE(colunas_validas());
 }
 
+void test_jogo_resolvido() {
+    carregar_txt("solucao.txt");
+    //CU_ASSERT_TRUE(linhas_validas());
+    CU_ASSERT_EQUAL(verificar_repeticoes_letras_linhas(), 1);
+    CU_ASSERT_EQUAL(verificar_minisculas(), 1);
+    CU_ASSERT_EQUAL(verificar_vizinhos_riscados(), 1);
+    //CU_ASSERT_TRUE(colunas_validas());
+    CU_ASSERT_EQUAL(verificar_repeticoes_letras_colunas(), 1);
+    //CU_ASSERT_TRUE(verificar_vitoria());
+}
+
 int main() {
     if (CUE_SUCCESS != CU_initialize_registry())
         return CU_get_error();
@@ -134,9 +145,9 @@ int main() {
     CU_add_test(suite, "Testar colunas_validas", test_colunas_validas);
     CU_add_test(suite, "Testar todas_casas_conectadas", test_todas_casas_conectadas);
     CU_add_test(suite, "Testar verificar_vitoria", test_verificar_vitoria);
-    // CU_add_test(suite, "Testar pode_colocar", test_pode_colocar);
     CU_add_test(suite, "Testar aplicar_primeira_restricao", test_aplicar_primeira_restricao);
     CU_add_test(suite, "Testar resolver_com_restricoes", test_resolver_com_restricoes);
+    CU_add_test(suite, "Testar jogo_resolvido", test_jogo_resolvido);
 
     CU_basic_set_mode(CU_BRM_VERBOSE);
     CU_basic_run_tests();
