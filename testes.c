@@ -93,14 +93,6 @@ void test_aplicar_primeira_restricao() {
 void test_jogo_resolvido_por_resolver() {
     comecar_jogo();
     CU_ASSERT_FALSE(verificar_vitoria());
-    // função verificar vitória usa internamente estas funções
-    // por isso é feito o teste a cada uma para, em caso de falha,
-    // perceber em que ponto falhou
-    // CU_ASSERT_EQUAL(aplicar_restricao_repeticoes_colunas(), 0); 
-    // CU_ASSERT_EQUAL(aplicar_restricao_repeticoes_linhas(), 0); 
-    // CU_ASSERT_EQUAL(verificar_minisculas(), 0); 
-    // CU_ASSERT_EQUAL(verificar_vizinhos_riscados(), 0); 
-    // CU_ASSERT_EQUAL(todas_casas_conectadas(), 0); 
 }
 
 void test_jogo_resolvido() {
