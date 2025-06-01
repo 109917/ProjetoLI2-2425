@@ -412,17 +412,31 @@ void resolver_com_restricoes() {
 
 
 
-// void começar_jogo()
-// {
-// estado_t *inicio = malloc(sizeof(estado_t));
-// if (!inicio)
-// exit(EXIT_FAILURE);
-// for (int i = 0; i < TAMANHO; i++)
-// for (int j = 0; j < TAMANHO; j++)
-// inicio->tabuleiro[i][j] = 'a' + j;
-// inicio->anterior = NULL;
-// estado_atual = inicio;
-// }
+void comecar_jogo()
+{
+    if (estado_atual) {
+        libertar_estado(estado_atual);
+    }
+
+    estado_t *inicio = malloc(sizeof(estado_t));
+    if (!inicio){
+        free(inicio);
+        exit(EXIT_FAILURE);
+    }
+        
+    inicio->linhas = 5; 
+    inicio->colunas = 5;
+    inicio->tabuleiro = malloc(inicio->linhas * sizeof(char *));
+    for (int i = 0; i < inicio->linhas; i++) {
+        inicio->tabuleiro[i] = malloc(inicio->colunas * sizeof(char));
+        for (int j = 0; j < inicio->colunas; j++){
+            inicio->tabuleiro[i][j] = 'a' + j; 
+        }
+    }
+    inicio->anterior = NULL;
+    estado_atual = inicio;
+}
+
 
 void ler_comandos_jogo(char *comando){
     if (comando[0] == 's') {
