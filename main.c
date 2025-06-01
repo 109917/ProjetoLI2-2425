@@ -226,45 +226,11 @@ int verificar_vizinhos_riscados() {
     return 1;
 }
 
-
-int verificar_repeticoes_letras_linhas(){
-    for (int i = 0; i < estado_atual->linhas; i++){
-        int contagem[26] = {0};
-        for (int j = 0; j < estado_atual->colunas; j++){
-            char c = estado_atual->tabuleiro[i][j];
-            if (isupper(c)){
-                int idx = c - 'A';
-                contagem[idx]++;
-                if (contagem[idx] > 1) return 0;
-            }
-        }
-    }
-    return 1;
-}
-
 int linhas_validas() {
     return verificar_repeticoes_letras_linhas() &&
     verificar_minisculas() &&
     verificar_vizinhos_riscados();
 }
-
-int verificar_repeticoes_letras_colunas(){
-    for (int j = 0; j < estado_atual->colunas; j++) {
-        int contagem[26] = {0};
-        for (int i = 0; i < estado_atual->linhas; i++) {
-            char c = estado_atual->tabuleiro[i][j];
-            if (isupper(c)){
-                int idx = c - 'A';
-                contagem[idx]++;
-                if (contagem[idx] > 1)
-                return 0;
-            }
-        }
-    }
-    return 1;
-}
-
-
 
 int colunas_validas(){
     return verificar_repeticoes_letras_colunas() &&
@@ -339,21 +305,31 @@ int verificar_vitoria() {
     todas_casas_conectadas();
 }
 
-int aplicar_restricao_repeticoes_linhas(){
-    for (int i = 0; i < estado_atual->linhas; i++){
-        int contagem[26] = {0};
-        for (int j = 0; j < estado_atual->colunas; j++) {
-            char c = estado_atual->tabuleiro[i][j];
-            if (isupper(c)) {
-                int idx = c - 'A';
-                contagem[idx]++;
-                if (contagem[idx] > 1 ) {
-                    return 0;  // Letra repetida => inválido
-                }
+int linha_sem_repeticoes(int i) {
+    if (i < 0 || i >= estado_atual->linhas) return 0;
+
+    int contagem[20] = {0};
+
+    for (int j = 0; j < estado_atual->linhas; j++) {
+        char c = estado_atual->tabuleiro[i][j];
+        if (isupper(c)) {
+            int idx = c - 'A';
+            contagem[idx]++;
+            if (contagem[idx] > 1) {
+                return 0;
             }
         }
     }
-    return 1;  // Nenhuma repetição
+
+    return 1;
+}
+
+int aplicar_restricao_repeticoes_linhas(){
+    for (int i = 0; i < estado_atual->linhas; i++){
+        if(linha_sem_repeticoes(i)) continue;
+        else return 0;
+    }
+    return 1; 
 }
 
 
@@ -369,70 +345,93 @@ int aplicar_restricao_minisculas(){
     return 0;
 }
 
-int aplicar_restricao_vizinhos_riscados() {
+int aplicar_restricao_vizinhos_riscados(int i, int j) {
+    if (estado_atual->tabuleiro[i][j] == '#') return 0;
+    if (verificar_vizinhos_riscados_casa(i, j)){
+        estado_atual->tabuleiro[i][j] = '#';
+        return 1;   
+        }
+    return 0;
+}
+
+int coluna_sem_repeticoes(int j) {
+    if (j < 0 || j >= estado_atual->colunas) return 0;
+
+    int contagem[20] = {0};
+
     for (int i = 0; i < estado_atual->linhas; i++) {
-        for (int j = 0; j < estado_atual->colunas; j++) {
-            if (estado_atual->tabuleiro[i][j] == '#') continue;
-            if (verificar_vizinhos_riscados_casa(i, j)){
-                estado_atual->tabuleiro[i][j] = '#';
-                return 1;
+        char c = estado_atual->tabuleiro[i][j];
+        if (isupper(c)) {
+            int idx = c - 'A';
+            contagem[idx]++;
+            if (contagem[idx] > 1) {
+                return 0;
             }
         }
     }
-    return 0;
+
+    return 1;
 }
 
 int aplicar_restricao_repeticoes_colunas() {
     for (int j = 0; j < estado_atual->colunas; j++) {
-        int contagem[26] = {0};
-        for (int i = 0; i < estado_atual->linhas; i++) {
-            char c = estado_atual->tabuleiro[i][j];
-            if (isupper(c)) {
-                int idx = c - 'A';
-                contagem[idx]++;
-                if (contagem[idx] > 1 ) {
-                    return 0;  // Letra repetida => inválido
-                }
-            }
-        }
+        if (coluna_sem_repeticoes(j)) continue;
+        else return 0;
     }
-    return 1;  // Nenhuma repetição
+    return 1;
 }
 
 
 
 int aplicar_primeira_restricao(){
     if (aplicar_restricao_minisculas()) return 1;
-    if (aplicar_restricao_repeticoes_colunas()) aplicar_restricao_vizinhos_riscados();
-    if (aplicar_restricao_repeticoes_linhas()) aplicar_restricao_vizinhos_riscados();
-    if (aplicar_restricao_vizinhos_riscados()) return 1;
-
-
-    salvar_estado();
+    for (int i = 0; i < estado_atual-> linhas; i++){
+        for (int j = 0; j < estado_atual->colunas; j++){
+                if (!coluna_sem_repeticoes(j) && (!linha_sem_repeticoes(i))){
+                    aplicar_restricao_vizinhos_riscados(i,j);
+                    salvar_estado();
+                    return 1;
+                    if(!todas_casas_conectadas()) {
+                        desfazer();
+                        continue;
+                    }
+                }
+        }
+    }
     return 0;
 }
 
 void resolver_com_restricoes() {
     int alterado;
-    int aux = estado_atual->linhas * estado_atual->colunas;
 
     do {
         alterado = 1;
 
         for (int i = 0; i < estado_atual->linhas; i++) {
             for (int j = 0; j < estado_atual->colunas; j++) {
-                aplicar_primeira_restricao();
-                salvar_estado();
-                if (!todas_casas_conectadas()){
-                    desfazer();
+                if (aplicar_restricao_minisculas()){
+                    salvar_estado();
                     continue;
                 }
             }
         }
-        aux--;
-        if (aux < 0) alterado = 0;
+        for (int i = 0; i < estado_atual->linhas; i++){
+            for (int j = 0; j < estado_atual->colunas; j++){
+                if (!coluna_sem_repeticoes(j) && (!linha_sem_repeticoes(i))){
+                    aplicar_restricao_vizinhos_riscados(i,j);
+                    salvar_estado();
+                    if(!todas_casas_conectadas()) {
+                        desfazer();
+                        continue;
+                    }
+                } 
+            }   
+        }
+         alterado = 0;
     } while (alterado);
 
+
+}
 
 
 void comecar_jogo()
