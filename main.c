@@ -19,23 +19,29 @@ typedef struct
     int coluna;
 } coordenada_t;
 
-estado_t *estado_atual = NULL;
+estado_t *estado_atual;
 
 void resolver_jogo(void);
 
 void salvar_estado() {
+    if (!estado_atual || !estado_atual->tabuleiro) {
+        return;
+    } 
     estado_t *novo = malloc(sizeof(estado_t));
     if (!novo)
-    exit(EXIT_FAILURE);
+        exit(EXIT_FAILURE);
 
     novo->linhas = estado_atual->linhas;
     novo->colunas = estado_atual->colunas;
 
- // reservar memoria para o novo tabuleiro
+    // reservar memoria para o novo tabuleiro
     novo->tabuleiro = malloc(novo->linhas * sizeof(char *));
     for (int i = 0; i < novo->linhas; i++) {
         novo->tabuleiro[i] = malloc(novo->colunas * sizeof(char));
-        memcpy(novo->tabuleiro[i], estado_atual->tabuleiro[i], novo->colunas * sizeof(char));
+        if (estado_atual->tabuleiro[i]) // proteção extra
+            memcpy(novo->tabuleiro[i], estado_atual->tabuleiro[i], novo->colunas * sizeof(char));
+        else
+            memset(novo->tabuleiro[i], 0, novo->colunas * sizeof(char));
     }
 
     novo->anterior = estado_atual;
@@ -46,6 +52,10 @@ void desfazer() {
     if (estado_atual && estado_atual->anterior) {
         estado_t *temp = estado_atual;
         estado_atual = estado_atual->anterior;
+        for (int i = 0; i < temp->linhas; i++) {
+            free(temp->tabuleiro[i]);
+        }
+        free(temp->tabuleiro);
         free(temp);
     } else {
         printf("Não há mais estados para desfazer.\n");
@@ -61,34 +71,45 @@ void carregar_txt(const char *nome) {
     }
 
     estado_t *novo = malloc(sizeof(estado_t));
-    if (!novo)
-    exit(EXIT_FAILURE);
+    if (!novo){
+        exit(EXIT_FAILURE);
+    }
 
-    fscanf(f, "%d %d", &novo->linhas, &novo->colunas);
+    if (fscanf(f, "%d %d", &novo->linhas, &novo->colunas) != 2) {
+        printf("Erro ao ler dimensões do tabuleiro.\n");
+        fclose(f);
+        free(novo);
+        return;
+    }
 
     novo->tabuleiro = malloc(novo->linhas * sizeof(char *));
     for (int i = 0; i < novo->linhas; i++) {
         novo->tabuleiro[i] = malloc(novo->colunas * sizeof(char));
     }
     int c;
- // ler até fim de linha
-    while ((c = fgetc(f)) != EOF && c != '\n');
-
-     int linha = 0, coluna = 0;
-     while ((c = fgetc(f)) != EOF && linha < novo->linhas) {
-        if (c == '\n') {
- // fim de linha
-            continue; 
+    // ler até fim de linha
+    while ((c = fgetc(f)) != EOF && c != '\n') {
+        // ciclo vazio propositado
+    }
+    int linha = 0, coluna = 0;
+    while ((c = fgetc(f)) != EOF && linha < novo->linhas){
+        if (c == '\n'){
+            // fim de linha
+            continue;
         }
         novo->tabuleiro[linha][coluna++] = (char)c;
-        if (coluna == novo->colunas) {
+        if (coluna == novo->colunas){
             coluna = 0;
             linha++;
         }
     }
 
     novo->anterior = NULL;
-    if (estado_atual){
+    if (estado_atual) {
+        for (int i = 0; i < estado_atual->linhas; i++) {
+            free(estado_atual->tabuleiro[i]);
+        }
+        free(estado_atual->tabuleiro);
         free(estado_atual);
     }
     estado_atual = novo;
@@ -248,19 +269,19 @@ void dfs(int i, int j, int **visitado, int *conectadas){
 }
 
 int todas_casas_conectadas(){
-// int visitado[TAMANHO][TAMANHO] = {{0}};
+    // int visitado[TAMANHO][TAMANHO] = {{0}};
     int total = 0, conectadas = 0;
     int i0 = -1, j0 = -1;
 
     int **visitado;
 
- // reservar memoria para as linhas e colunas
+    // reservar memoria para as linhas e colunas
     visitado = malloc(estado_atual->linhas * sizeof(int *));
     for (int i = 0; i < estado_atual->linhas; i++) {
         visitado[i] = malloc(estado_atual->colunas * sizeof(int));
     }
 
- // colocar todas as posições com 0
+    // colocar todas as posições com 0
     for (int i = 0; i < estado_atual->linhas; i++) {
         for (int j = 0; j < estado_atual->colunas; j++) {
         visitado[i][j] = 0;
@@ -277,10 +298,20 @@ int todas_casas_conectadas(){
                 }
             }
 
-        if (total == 0) return 1;
+        if (total == 0) {
+            for (int i = 0; i < estado_atual->linhas; i++)
+                free(visitado[i]);
+            free(visitado);
+            return 1;
+        }
         dfs(i0, j0, visitado, &conectadas);
     }
- return conectadas == total;
+
+    for (int i = 0; i < estado_atual->linhas; i++)
+        free(visitado[i]);
+    free(visitado);
+
+    return conectadas == total;
 }
 
 int verificar_vitoria() {
@@ -393,17 +424,26 @@ void resolver_com_restricoes(){
     } while (alterado);
 }
 
-// void começar_jogo()
-// {
-// estado_t *inicio = malloc(sizeof(estado_t));
-// if (!inicio)
-// exit(EXIT_FAILURE);
-// for (int i = 0; i < TAMANHO; i++)
-// for (int j = 0; j < TAMANHO; j++)
-// inicio->tabuleiro[i][j] = 'a' + j;
-// inicio->anterior = NULL;
-// estado_atual = inicio;
-// }
+void comecar_jogo()
+{
+    estado_t *inicio = malloc(sizeof(estado_t));
+    if (!inicio){
+        free(inicio);
+        exit(EXIT_FAILURE);
+    }
+        
+    inicio->linhas = 5; 
+    inicio->colunas = 5;
+    inicio->tabuleiro = malloc(inicio->linhas * sizeof(char *));
+    for (int i = 0; i < inicio->linhas; i++) {
+        inicio->tabuleiro[i] = malloc(inicio->colunas * sizeof(char));
+        for (int j = 0; j < inicio->colunas; j++){
+            inicio->tabuleiro[i][j] = 'a' + j; 
+        }
+    }
+    inicio->anterior = NULL;
+    estado_atual = inicio;
+}
 
 void ler_comandos_jogo(char *comando){
     if (comando[0] == 's') {
@@ -444,9 +484,11 @@ void ler_comandos_jogo(char *comando){
     }
 }
 
+#ifndef TEST_BUILD
+
 int main() {
     printf("Comandos :\n 's' - sair do jogo\n 'r' - riscar coordenada\n 'b' - casa Branca\n 'd' - desfazer\n 'v' - verificar restrições\n 'r' - resolver\n 'g' <jogo.txt> - gravar o jogo no ficheiro jogo.txt \n 'l' <jogo.txt> - ler o jogo gravado no ficheiro jogo.txt \n \n");
- //começar_jogo();
+    comecar_jogo();
 
     char comando[100];
 
@@ -466,3 +508,4 @@ int main() {
 
     return 0;
 }
+#endif
