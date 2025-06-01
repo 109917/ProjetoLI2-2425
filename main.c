@@ -187,18 +187,13 @@ int verificar_vizinhos_riscados_casa(int i, int j) {
 int verificar_vizinhos_riscados() {
     for (int j = 0; j < estado_atual->colunas; j++) {
         for (int i = 0; i < estado_atual->linhas; i++) {
-            if (estado_atual->tabuleiro[i][j] != '#' || estado_atual->tabuleiro[i][j] == '#'){
-                int vizinho = 0;
-                if (i > 0 && (estado_atual->tabuleiro[i - 1][j] == '#')) vizinho++;
-                if (i < estado_atual->linhas - 1 && (estado_atual->tabuleiro[i + 1][j] == '#')) vizinho++;
-                if (j > 0 && (estado_atual->tabuleiro[i][j - 1] == '#')) vizinho++;
-                if (j < estado_atual->colunas - 1 && (estado_atual->tabuleiro[i][j + 1] == '#')) vizinho++;
-                if (vizinho > 0) return 0;
-            }
+            if (verificar_vizinhos_riscados_casa(i, j)) continue;
+            else return 0;
         }
     }
     return 1;
 }
+
 
 int verificar_repeticoes_letras_linhas(){
     for (int i = 0; i < estado_atual->linhas; i++){
