@@ -211,7 +211,7 @@ int verificar_vizinhos_riscados_casa(int i, int j) {
     if (j > 0 && (estado_atual->tabuleiro[i][j - 1] == '#')) riscados++;
     if (j < estado_atual->colunas - 1 && (estado_atual->tabuleiro[i][j + 1] == '#')) riscados++;
 
-    printf("Casa (%d, %d) - Vizinhos: %d, Riscados: %d\n", i, j, vizinhos, riscados);
+    //printf("Casa (%d, %d) - Vizinhos: %d, Riscados: %d\n", i, j, vizinhos, riscados);
 
     return vizinhos == riscados ? 0 : 1;
 }
