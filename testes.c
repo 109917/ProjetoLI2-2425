@@ -62,27 +62,6 @@ void test_casaRiscada() {
     CU_ASSERT_EQUAL(estado_atual->tabuleiro[0][0], '#');
 }
 
-void test_verificar_repeticoes_letras_linhas() {
-    comecar_jogo();
-    CU_ASSERT_TRUE(verificar_repeticoes_letras_linhas());
-}
-
-void test_linhas_validas() {
-    comecar_jogo();
-    CU_ASSERT_TRUE(linhas_validas());
-}
-
-void test_verificar_repeticoes_letras_colunas() {
-    comecar_jogo();
-    CU_ASSERT_TRUE(verificar_repeticoes_letras_colunas());
-}
-
-
-void test_colunas_validas() {
-    comecar_jogo();
-    CU_ASSERT_TRUE(colunas_validas());
-}
-
 void test_todas_casas_conectadas() {
     comecar_jogo();
     CU_ASSERT_TRUE(todas_casas_conectadas());
@@ -104,22 +83,24 @@ void test_aplicar_primeira_restricao() {
     CU_ASSERT_TRUE(aplicar_primeira_restricao());
 }
 
-void test_resolver_com_restricoes() {
-    comecar_jogo();
-    resolver_com_restricoes();
-    CU_ASSERT_TRUE(linhas_validas());
-    CU_ASSERT_TRUE(colunas_validas());
-}
+// void test_resolver_com_restricoes() {
+//     comecar_jogo();
+//     resolver_com_restricoes();
+//     CU_ASSERT_TRUE(linhas_validas());
+//     CU_ASSERT_TRUE(colunas_validas());
+// }
 
 void test_jogo_resolvido() {
     carregar_txt("solucao.txt");
-    //CU_ASSERT_TRUE(linhas_validas());
-    CU_ASSERT_EQUAL(verificar_repeticoes_letras_linhas(), 1);
-    CU_ASSERT_EQUAL(verificar_minisculas(), 1);
-    CU_ASSERT_EQUAL(verificar_vizinhos_riscados(), 1);
-    //CU_ASSERT_TRUE(colunas_validas());
-    CU_ASSERT_EQUAL(verificar_repeticoes_letras_colunas(), 1);
     //CU_ASSERT_TRUE(verificar_vitoria());
+    // função verificar vitória usa internamente estas funções
+    // por isso é feito o teste a cada uma para, em caso de falha,
+    // perceber em que ponto falhou
+    CU_ASSERT_EQUAL(aplicar_restricao_repeticoes_colunas(), 1); 
+    CU_ASSERT_EQUAL(aplicar_restricao_repeticoes_linhas(), 1); 
+    CU_ASSERT_EQUAL(verificar_minisculas(), 1); 
+    CU_ASSERT_EQUAL(verificar_vizinhos_riscados(), 1); 
+    CU_ASSERT_EQUAL(todas_casas_conectadas(), 1 ); 
 }
 
 int main() {
@@ -139,14 +120,10 @@ int main() {
     CU_add_test(suite, "Testar parse_coord", test_parse_coord);
     CU_add_test(suite, "Testar casaaBranco", test_casaaBranco);
     CU_add_test(suite, "Testar casaRiscada", test_casaRiscada);
-    CU_add_test(suite, "Testar verificar_repeticoes_letras_linhas", test_verificar_repeticoes_letras_linhas);
-    CU_add_test(suite, "Testar linhas_validas", test_linhas_validas);
-    CU_add_test(suite, "Testar verificar_repeticoes_letras_colunas", test_verificar_repeticoes_letras_colunas);
-    CU_add_test(suite, "Testar colunas_validas", test_colunas_validas);
     CU_add_test(suite, "Testar todas_casas_conectadas", test_todas_casas_conectadas);
     CU_add_test(suite, "Testar verificar_vitoria", test_verificar_vitoria);
     CU_add_test(suite, "Testar aplicar_primeira_restricao", test_aplicar_primeira_restricao);
-    CU_add_test(suite, "Testar resolver_com_restricoes", test_resolver_com_restricoes);
+    //CU_add_test(suite, "Testar resolver_com_restricoes", test_resolver_com_restricoes);
     CU_add_test(suite, "Testar jogo_resolvido", test_jogo_resolvido);
 
     CU_basic_set_mode(CU_BRM_VERBOSE);

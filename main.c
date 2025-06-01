@@ -410,8 +410,6 @@ void resolver_com_restricoes() {
 
 }
 
-
-
 void comecar_jogo()
 {
     if (estado_atual) {
