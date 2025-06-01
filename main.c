@@ -251,16 +251,32 @@ int todas_casas_conectadas() {
     return conectadas == total;
 }
 
+int coluna_sem_repeticoes(int j) {
+    if (j < 0 || j >= estado_atual->colunas) return 0;
 
-int verificar_vitoria() {
-    if (aplicar_restricao_repeticoes_colunas() 
-    && aplicar_restricao_repeticoes_linhas() 
-    && verificar_minisculas() 
-    && verificar_vizinhos_riscados() 
-    && todas_casas_conectadas()) return 1;
-    else return 0;
+    int contagem[20] = {0};
+
+    for (int i = 0; i < estado_atual->linhas; i++) {
+        char c = estado_atual->tabuleiro[i][j];
+        if (isupper(c)) {
+            int idx = c - 'A';
+            contagem[idx]++;
+            if (contagem[idx] > 1) {
+                return 0;
+            }
+        }
+    }
+
+    return 1;
 }
 
+int aplicar_restricao_repeticoes_colunas() {
+    for (int j = 0; j < estado_atual->colunas; j++) {
+        if (coluna_sem_repeticoes(j)) continue;
+        else return 0;
+    }
+    return 1;
+}
 
 int linha_sem_repeticoes(int i) {
     if (i < 0 || i >= estado_atual->linhas) return 0;
@@ -289,6 +305,17 @@ int aplicar_restricao_repeticoes_linhas(){
     return 1; 
 }
 
+int verificar_vitoria() {
+    if (aplicar_restricao_repeticoes_colunas() 
+    && aplicar_restricao_repeticoes_linhas() 
+    && verificar_minisculas() 
+    && verificar_vizinhos_riscados() 
+    && todas_casas_conectadas()) return 1;
+    else return 0;
+}
+
+
+
 
 int aplicar_restricao_minisculas(){
     for (int i = 0; i < estado_atual->linhas; i++) {
@@ -309,33 +336,6 @@ int aplicar_restricao_vizinhos_riscados(int i, int j) {
         return 1;   
         }
     return 0;
-}
-
-int coluna_sem_repeticoes(int j) {
-    if (j < 0 || j >= estado_atual->colunas) return 0;
-
-    int contagem[20] = {0};
-
-    for (int i = 0; i < estado_atual->linhas; i++) {
-        char c = estado_atual->tabuleiro[i][j];
-        if (isupper(c)) {
-            int idx = c - 'A';
-            contagem[idx]++;
-            if (contagem[idx] > 1) {
-                return 0;
-            }
-        }
-    }
-
-    return 1;
-}
-
-int aplicar_restricao_repeticoes_colunas() {
-    for (int j = 0; j < estado_atual->colunas; j++) {
-        if (coluna_sem_repeticoes(j)) continue;
-        else return 0;
-    }
-    return 1;
 }
 
 
@@ -390,19 +390,32 @@ void resolver_com_restricoes() {
 
 }
 
+void comecar_jogo(){
 
-
-// void começar_jogo()
-// {
-// estado_t *inicio = malloc(sizeof(estado_t));
-// if (!inicio)
-// exit(EXIT_FAILURE);
-// for (int i = 0; i < TAMANHO; i++)
-// for (int j = 0; j < TAMANHO; j++)
-// inicio->tabuleiro[i][j] = 'a' + j;
-// inicio->anterior = NULL;
-// estado_atual = inicio;
-// }
+    if (estado_atual)
+    {
+        libertar_estado(estado_atual);
+    }
+    estado_t *inicio = malloc(sizeof(estado_t));
+    if (!inicio)
+    {
+        free(inicio);
+        exit(EXIT_FAILURE);
+    }
+    inicio->linhas = 5;
+    inicio->colunas = 5;
+    inicio->tabuleiro = malloc(inicio->linhas * sizeof(char *));
+    for (int i = 0; i < inicio->linhas; i++)
+    {
+        inicio->tabuleiro[i] = malloc(inicio->colunas * sizeof(char));
+        for (int j = 0; j < inicio->colunas; j++)
+        {
+            inicio->tabuleiro[i][j] = 'a' + j;
+        }
+    }
+    inicio->anterior = NULL;
+    estado_atual = inicio;
+}
 
 void ler_comandos_jogo(char *comando){
     if (comando[0] == 's') {
