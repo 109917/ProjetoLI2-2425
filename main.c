@@ -35,18 +35,31 @@ void salvar_estado() {
     estado_atual = novo;
 }
 
-void desfazer() {
-    if (estado_atual && estado_atual->anterior) {
+
+
+int desfazer()
+{
+    if (estado_atual && estado_atual->anterior)
+    {
         estado_t *temp = estado_atual;
         estado_atual = estado_atual->anterior;
-        for (int i = 0; i < temp->linhas; i++) {
+
+        for (int i = 0; i < temp->linhas; i++)
+        {
             free(temp->tabuleiro[i]);
         }
+
         free(temp->tabuleiro);
         free(temp);
-    } else {
-        printf("Não há mais estados para desfazer.\n");
+        return 1;
     }
+    else
+    {
+        printf("Não há mais estados para desfazer.\n");
+        return 0;
+    }
+
+    return 0;
 }
 
 void carregar_txt(const char *nome) {
@@ -390,62 +403,67 @@ void resolver_com_restricoes() {
 
 }
 
+void comecar_jogo(){
 
-
-
-int desfazer() {
-    if (estado_atual && estado_atual->anterior) {
-        estado_t *temp = estado_atual;
-        estado_atual = estado_atual->anterior;
-        for (int i = 0; i < temp->linhas; i++) {
-            free(temp->tabuleiro[i]);
-        }
-        free(temp->tabuleiro);
-        free(temp);
-        return 1;
-    } else {
-        printf("Não há mais estados para desfazer.\n");
-        return 0;
+    if (estado_atual)
+    {
+        libertar_estado(estado_atual);
     }
-    return 0;
+    estado_t *inicio = malloc(sizeof(estado_t));
+    if (!inicio)
+    {
+        free(inicio);
+        exit(EXIT_FAILURE);
+    }
+    inicio->linhas = 5;
+    inicio->colunas = 5;
+    inicio->tabuleiro = malloc(inicio->linhas * sizeof(char *));
+    for (int i = 0; i < inicio->linhas; i++)
+    {
+        inicio->tabuleiro[i] = malloc(inicio->colunas * sizeof(char));
+        for (int j = 0; j < inicio->colunas; j++)
+        {
+            inicio->tabuleiro[i][j] = 'a' + j;
+        }
+    }
+    inicio->anterior = NULL;
+    estado_atual = inicio;
 }
 
-void resolver_jogo(){
+void resolver_jogo()
+{
+
     int aux = estado_atual->linhas;
     int i, j;
-    while (desfazer()){
+
+    while (desfazer())
+    {
         desfazer();
     }
 
-    while (aux >= 0){
-        for (i = 0; i < estado_atual->linhas; i++ ){
-            for (j = 0; j < estado_atual->colunas; j++ ){
-                aplicar_restricao_vizinhos_riscados(i,j);
+    while (aux >= 0)
+    {
+        for (i = 0; i < estado_atual->linhas; i++)
+        {
+            for (j = 0; j < estado_atual->colunas; j++)
+            {
+                aplicar_restricao_vizinhos_riscados(i, j);
                 resolver_com_restricoes();
-                if (verificar_vitoria()) break;
-                else {
-                    while (desfazer()){
-                        defazer();
+                if (verificar_vitoria())
+                    break;
+                else
+                {
+                    while (desfazer())
+                    {
+                        desfazer();
                     }
                 }
             }
         }
-    aux --;
+
+        aux--;
     }
 }
-
-
-// void começar_jogo()
-// {
-// estado_t *inicio = malloc(sizeof(estado_t));
-// if (!inicio)
-// exit(EXIT_FAILURE);
-// for (int i = 0; i < TAMANHO; i++)
-// for (int j = 0; j < TAMANHO; j++)
-// inicio->tabuleiro[i][j] = 'a' + j;
-// inicio->anterior = NULL;
-// estado_atual = inicio;
-// }
 
 void ler_comandos_jogo(char *comando){
     if (comando[0] == 's') {
@@ -465,7 +483,7 @@ void ler_comandos_jogo(char *comando){
         printf("Não há mais dicas aplicaveis\n");
     }else if (comando[0] == 'R'){
         resolver_jogo();
-        printf("Jogo resolvido \n");
+        printf("Jogo resolvido \n");            
     } else if (comando[0] == 'v') {
         if (!aplicar_restricao_repeticoes_linhas() || !aplicar_restricao_repeticoes_colunas()) printf("Existem letras repetidas na mesma linha ou coluna!\n");
         if (!verificar_minisculas()) printf("Existem letras minúsculas no tabuleiro!\n");
@@ -492,8 +510,7 @@ void ler_comandos_jogo(char *comando){
 #ifndef TEST_BUILD
 
 int main() {
-    printf("Comandos :\n 's' - sair do jogo\n 'r' - riscar coordenada\n 'b' - casa Branca\n 'd' - desfazer\n 'v' - verificar restrições\n 'a' - aplicar uma dica\n 'A' - aplicar dicas até não alterar ser possivel alterar o tabuleiro\n 'R' - resolver\n 'g' <jogo.txt> - gravar o jogo no ficheiro jogo.txt \n 'l' <jogo.txt> - ler o jogo gravado no ficheiro jogo.txt \n \n");
- //começar_jogo();
+    printf("Comandos :\n 's' - sair do jogo\n 'r' - riscar coordenada\n 'b' - casa Branca\n 'd' - desfazer\n 'v' - verificar restrições\n 'a' - aplicar uma dica\n 'A' - aplicar dicas até não alterar ser possivel alterar o tabuleiro\n 'R' - resolver\n 'g' <jogo.txt> - gravar o jogo no ficheiro jogo.txt \n 'l' <jogo.txt> - ler o jogo gravado no ficheiro jogo.txt \n \n"); //começar_jogo();
 
     char comando[100];
 
