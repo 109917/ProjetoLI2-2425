@@ -349,8 +349,8 @@ int aplicar_restricao_vizinhos_riscados() {
         for (int j = 0; j < estado_atual->colunas; j++) {
             if (estado_atual->tabuleiro[i][j] == '#') continue;
             if (verificar_vizinhos_riscados_casa(i, j)){
-            estado_atual->tabuleiro[i][j] = '#';
-            return 1;
+                estado_atual->tabuleiro[i][j] = '#';
+                return 1;
             }
         }
     }
