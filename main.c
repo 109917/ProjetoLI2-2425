@@ -275,16 +275,32 @@ int todas_casas_conectadas() {
     return conectadas == total;
 }
 
+int coluna_sem_repeticoes(int j) {
+    if (j < 0 || j >= estado_atual->colunas) return 0;
 
-int verificar_vitoria() {
-    if (aplicar_restricao_repeticoes_colunas() 
-    && aplicar_restricao_repeticoes_linhas() 
-    && verificar_minisculas() 
-    && verificar_vizinhos_riscados() 
-    && todas_casas_conectadas()) return 1;
-    else return 0;
+    int contagem[20] = {0};
+
+    for (int i = 0; i < estado_atual->linhas; i++) {
+        char c = estado_atual->tabuleiro[i][j];
+        if (isupper(c)) {
+            int idx = c - 'A';
+            contagem[idx]++;
+            if (contagem[idx] > 1) {
+                return 0;
+            }
+        }
+    }
+
+    return 1;
 }
 
+int aplicar_restricao_repeticoes_colunas() {
+    for (int j = 0; j < estado_atual->colunas; j++) {
+        if (coluna_sem_repeticoes(j)) continue;
+        else return 0;
+    }
+    return 1;
+}
 
 int linha_sem_repeticoes(int i) {
     if (i < 0 || i >= estado_atual->linhas) return 0;
@@ -314,6 +330,15 @@ int aplicar_restricao_repeticoes_linhas(){
 }
 
 
+int verificar_vitoria() {
+    if (aplicar_restricao_repeticoes_colunas() 
+    && aplicar_restricao_repeticoes_linhas() 
+    && verificar_minisculas() 
+    && verificar_vizinhos_riscados() 
+    && todas_casas_conectadas()) return 1;
+    else return 0;
+}
+
 int aplicar_restricao_minisculas(){
     for (int i = 0; i < estado_atual->linhas; i++) {
         for (int j = 0; j < estado_atual->colunas; j++) {
@@ -334,35 +359,6 @@ int aplicar_restricao_vizinhos_riscados(int i, int j) {
         }
     return 0;
 }
-
-int coluna_sem_repeticoes(int j) {
-    if (j < 0 || j >= estado_atual->colunas) return 0;
-
-    int contagem[20] = {0};
-
-    for (int i = 0; i < estado_atual->linhas; i++) {
-        char c = estado_atual->tabuleiro[i][j];
-        if (isupper(c)) {
-            int idx = c - 'A';
-            contagem[idx]++;
-            if (contagem[idx] > 1) {
-                return 0;
-            }
-        }
-    }
-
-    return 1;
-}
-
-int aplicar_restricao_repeticoes_colunas() {
-    for (int j = 0; j < estado_atual->colunas; j++) {
-        if (coluna_sem_repeticoes(j)) continue;
-        else return 0;
-    }
-    return 1;
-}
-
-
 
 int aplicar_primeira_restricao(){
     if (aplicar_restricao_minisculas()) return 1;
