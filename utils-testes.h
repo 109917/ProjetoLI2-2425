@@ -6,19 +6,8 @@
 #include <string.h>
 #include <ctype.h>
 
+#include "tipos.h"
 
-typedef struct estado
-{
-    char **tabuleiro;
-    int linhas;
-    int colunas;
-    struct estado *anterior;
-} estado_t;
-
-typedef struct {
-    int linha;
-    int coluna;
-} coordenada_t;
 
 void salvar_estado();
 void desfazer();

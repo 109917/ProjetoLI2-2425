@@ -1,23 +1,10 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <ctype.h>
 
+#include "tipos.h"
+#include "utils-mem.h"
 
-typedef struct estado
-{
- //char tabuleiro[TAMANHO][TAMANHO];
-    char **tabuleiro;
-    int linhas;
-    int colunas;
-    struct estado *anterior;
-} estado_t;
-
-typedef struct
-{
-    int linha; 
-    int coluna;
-} coordenada_t;
 
 estado_t *estado_atual;
 
@@ -410,7 +397,7 @@ void resolver_com_restricoes() {
 
         for (int i = 0; i < estado_atual->linhas; i++) {
             for (int j = 0; j < estado_atual->colunas; j++) {
-                printf("%d %d \n", i, j);
+                //printf("%d %d \n", i, j);
                 aplicar_primeira_restricao();
 
             }
@@ -426,6 +413,10 @@ void resolver_com_restricoes() {
 
 void comecar_jogo()
 {
+    if (estado_atual) {
+        libertar_estado(estado_atual);
+    }
+
     estado_t *inicio = malloc(sizeof(estado_t));
     if (!inicio){
         free(inicio);
